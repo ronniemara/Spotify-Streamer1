@@ -64,11 +64,16 @@ public class MainActivityFragment extends Fragment {
             @Override
             public boolean onQueryTextSubmit(String query) {
                 searchEditText.clearFocus();
-                FetchMusicTask fetchMusicTask = new FetchMusicTask();
+                OnTaskCompletedListiner listiner = new OnTaskCompletedListiner() {
+                    @Override
+                    public void taskCompleted() {
+                        if(mArtistData.isEmpty()) {
+                            Toast.makeText(getActivity(), "No artist found. Please refine your search", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                };
+                FetchMusicTask fetchMusicTask = new FetchMusicTask(listiner);
                 fetchMusicTask.execute(query);
-                if(mArtistData.isEmpty()) {
-                    Toast.makeText(getActivity(), "There is no artists information for your query", Toast.LENGTH_SHORT).show();
-                }
                 return true;
             }
 
@@ -91,7 +96,7 @@ public class MainActivityFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 ArtistObject item = mSpotifyadapter.getItem(position);
-                Intent startDetails = new Intent(getActivity(), DetailsActivity.class).putExtra(Intent.EXTRA_TEXT, item.mSpotifyId);
+                Intent startDetails = new Intent(getActivity(), DetailsActivity.class).putExtra(Intent.EXTRA_TEXT, item.mSpotifyId).putExtra("Artist", item.mName);
                 startActivity(startDetails);
 
             }
@@ -102,9 +107,17 @@ public class MainActivityFragment extends Fragment {
 
         public class FetchMusicTask extends AsyncTask<String, Void, Void> {
 
-        private final String LOG_TAG =  FetchMusicTask.class.getSimpleName();
+            private final String LOG_TAG =  FetchMusicTask.class.getSimpleName();
+            public OnTaskCompletedListiner listener = null;
+
+
+            public FetchMusicTask(OnTaskCompletedListiner listener) {
+                this.listener = listener;
+            }
 
         protected void onPostExecute(Void result) {
+
+            listener.taskCompleted();
 
             mSpotifyadapter.notifyDataSetChanged();
         }
@@ -115,10 +128,12 @@ public class MainActivityFragment extends Fragment {
             SpotifyService spotify = api.getService();
             ArtistsPager artistsData = spotify.searchArtists(artist[0]);
             List<Artist> artistInfo = artistsData.artists.items;
+
+            mArtistData.clear();
+
             if (artistInfo.isEmpty()) {
                 return null;
             }
-            mArtistData.clear();
 
             for (int i = 0; i < artistInfo.size(); i++) {
                 Artist art = artistInfo.get(i);
@@ -132,5 +147,11 @@ public class MainActivityFragment extends Fragment {
 
             return null;
         }
+    }
+
+
+
+    public interface OnTaskCompletedListiner {
+        public void taskCompleted();
     }
 }

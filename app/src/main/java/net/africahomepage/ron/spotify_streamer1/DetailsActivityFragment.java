@@ -1,6 +1,5 @@
 package net.africahomepage.ron.spotify_streamer1;
 
-import android.app.ActionBar;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -32,7 +31,7 @@ public class DetailsActivityFragment extends Fragment {
     Bundle extras = null;
 
 
-    private final String LOG_TAG =  DetailsActivityFragment.class.getSimpleName();
+    private final String LOG_TAG = DetailsActivityFragment.class.getSimpleName();
 
     public DetailsActivityFragment() {
     }
@@ -40,36 +39,27 @@ public class DetailsActivityFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         extras = getActivity().getIntent().getExtras();
+        // Set title
+        if (extras.containsKey("Artist")) {
+            StringBuilder titleBuilder = new StringBuilder("Top 10 Tracks \n ");
+            titleBuilder.append(extras.get("Artist"));
+
+             getActivity().setTitle(titleBuilder.toString());
+        }
         super.onCreate(savedInstanceState);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        // Set title
-        if(extras.containsKey("Artist") ){
-        StringBuilder titleBuilder = new StringBuilder("Top 10 Tracks /n");
-            titleBuilder.append(extras.get("Artist"));
-
-                ActionBar  actionBar = getActivity().getActionBar();
-
-            if(actionBar != null) {
-                actionBar.setTitle(titleBuilder.toString());
-            }
-        }
-    }
-
-    @Override
+        @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView  = inflater.inflate(R.layout.fragment_details, container, false);
+        View rootView = inflater.inflate(R.layout.fragment_details, container, false);
 
         if (extras != null) {
             mSpotifyId = extras.getString(Intent.EXTRA_TEXT);
         }
         startFetchTrackTASk();
 
-        ListView listView = (ListView)   rootView.findViewById(R.id.details_listview);
+        ListView listView = (ListView) rootView.findViewById(R.id.details_listview);
         adapter = new DetailsAdapter(getActivity(), mTracksData);
         listView.setAdapter(adapter);
 
@@ -77,19 +67,20 @@ public class DetailsActivityFragment extends Fragment {
     }
 
     private void startFetchTrackTASk() {
-        FetchTrackTAsk fetchTrackTAsk = new FetchTrackTAsk( );
+        FetchTrackTAsk fetchTrackTAsk = new FetchTrackTAsk();
         fetchTrackTAsk.execute();
 
-        if (mTracksData == null) {
-            Toast.makeText(getActivity(),"There are no top tracks for the artist selected", Toast.LENGTH_SHORT).show();
-        }
+
     }
 
     public class FetchTrackTAsk extends AsyncTask<Void, Void, Void> {
-        private final String LOG_TAG =  FetchTrackTAsk.class.getSimpleName();
+        private final String LOG_TAG = FetchTrackTAsk.class.getSimpleName();
 
         @Override
         protected void onPostExecute(Void tracks) {
+            if (mTracksData.isEmpty()) {
+                Toast.makeText(getActivity(), "There are no top tracks for the artist selected", Toast.LENGTH_SHORT).show();
+            }
             adapter.notifyDataSetChanged();
         }
 
@@ -101,7 +92,7 @@ public class DetailsActivityFragment extends Fragment {
             query.put("country", "CA");
             Tracks topTracksData = spotify.getArtistTopTrack(mSpotifyId, query);
             List<Track> tracksList = topTracksData.tracks;
-            if(tracksList.isEmpty()) {
+            if (tracksList.isEmpty()) {
                 return null;
             }
             mTracksData.clear();
@@ -119,8 +110,6 @@ public class DetailsActivityFragment extends Fragment {
 
         }
     }
-
-
 
 
 }
