@@ -1,17 +1,16 @@
 package net.africahomepage.ron.spotify_streamer1;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
-import android.util.Log;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.inputmethod.EditorInfo;
-import android.widget.ArrayAdapter;
+import android.widget.AdapterView;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.SearchView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,90 +19,118 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
 import kaaes.spotify.webapi.android.models.ArtistsPager;
+import kaaes.spotify.webapi.android.models.Image;
 
 /**
  * A placeholder fragment containing a simple view.
  */
 public class MainActivityFragment extends Fragment {
 
-    ArrayAdapter<String> mSpotifyadapter = null;
-    List<Artist> mArtistData = null;
-
+    ArtistAdapter mSpotifyadapter = null;
+    ArrayList<ArtistObject> mArtistData = new ArrayList<>();
 
     public MainActivityFragment() {
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        outState.putParcelableArrayList("ArtistDAta", mArtistData);
+        super.onSaveInstanceState(outState);
+    }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        if(savedInstanceState == null || !savedInstanceState.containsKey("ArtistDAta")) {
+            mArtistData = new ArrayList<ArtistObject>();
+        }
+        else {
+            mArtistData = savedInstanceState.getParcelableArrayList("ArtistDAta");
+
+        }
+        super.onCreate(savedInstanceState);
+
+        // Get the intent, verify the action and get the query
+
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
 
         View root = inflater.inflate(R.layout.fragment_main, container, false);
-        TextView searchEditText = (TextView) root.findViewById(R.id.search_editText);
-        searchEditText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+        final SearchView searchEditText = (SearchView) root.findViewById(R.id.search_editText);
+
+        searchEditText.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
-            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-                boolean handled = false;
-                if (actionId == EditorInfo.IME_ACTION_SEARCH ) {
-                    String searchText = v.getText().toString();
-                    FetchMusicTask fetchMusicTask = new FetchMusicTask();
-                    fetchMusicTask.execute(searchText);
-                    handled = true;
+            public boolean onQueryTextSubmit(String query) {
+                searchEditText.clearFocus();
+                FetchMusicTask fetchMusicTask = new FetchMusicTask();
+                fetchMusicTask.execute(query);
+                if(mArtistData.isEmpty()) {
+                    Toast.makeText(getActivity(), "There is no artists information for your query", Toast.LENGTH_SHORT).show();
                 }
-                return handled;
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                return false;
             }
         });
-//        String[] artists = {
-//                "Beyonce",
-//                "Gucci Mane",
-//                "Mariah Carey"
-//        };
 
 
 
-//        ArrayList<String> data = new ArrayList<>(
-//                Arrays.asList(artists)
-//        );
-
-        if(mArtistData != null) {
-
-        }
-
-        mSpotifyadapter = new ArrayAdapter<>(getActivity(),R.layout.main_listview_textview, R.id.artist_name_textview ,data);
+        mSpotifyadapter = new ArtistAdapter(getActivity(),mArtistData);
 
         ListView listView = (ListView) root.findViewById(R.id.mainActivity_listView);
         listView.setAdapter(mSpotifyadapter);
 
+
+
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                ArtistObject item = mSpotifyadapter.getItem(position);
+                Intent startDetails = new Intent(getActivity(), DetailsActivity.class).putExtra(Intent.EXTRA_TEXT, item.mSpotifyId);
+                startActivity(startDetails);
+
+            }
+        });
+
         return root;
     }
 
-    public class FetchMusicTask extends AsyncTask<String, Void, List<Artist>> {
+        public class FetchMusicTask extends AsyncTask<String, Void, Void> {
 
         private final String LOG_TAG =  FetchMusicTask.class.getSimpleName();
-        protected void onPostExecute(List<Artist> result) {
-           mArtistData = result;
+
+        protected void onPostExecute(Void result) {
+
+            mSpotifyadapter.notifyDataSetChanged();
         }
 
         @Override
-        protected List<Artist> doInBackground(String... artist) {
+        protected Void doInBackground(String... artist) {
             SpotifyApi api = new SpotifyApi();
             SpotifyService spotify = api.getService();
-            ArtistsPager artistData = spotify.searchArtists(artist[0]);
-            List<Artist> artistList = artistData.artists.items;
-            ArrayList<String> result = null;
-            for (int i=0; i < artistList.size(); i++) {
-                Artist art = artistList.get(i);
-
-//                Log.v(LOG_TAG, art.name);
-                try {
-                    result.add(art.name);
-                } catch (Exception e) {
-
-                }
+            ArtistsPager artistsData = spotify.searchArtists(artist[0]);
+            List<Artist> artistInfo = artistsData.artists.items;
+            if (artistInfo.isEmpty()) {
+                return null;
             }
-            return artistList;
-        }
+            mArtistData.clear();
 
+            for (int i = 0; i < artistInfo.size(); i++) {
+                Artist art = artistInfo.get(i);
+                List<Image> images = art.images;
+                mArtistData.add(new ArtistObject(
+                                    art.name,
+                                    art.id,
+                                    images.isEmpty() ? null : images.get(0).url
+                                ));
+            }
+
+            return null;
+        }
     }
 }
