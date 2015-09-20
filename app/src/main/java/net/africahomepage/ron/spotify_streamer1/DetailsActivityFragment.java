@@ -3,6 +3,7 @@ package net.africahomepage.ron.spotify_streamer1;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,7 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,10 +27,12 @@ import kaaes.spotify.webapi.android.models.Tracks;
  */
 public class DetailsActivityFragment extends Fragment {
 
-    List<TrackObject> mTracksData = new ArrayList<>();
+    ArrayList<TrackObject> mTracksData = new ArrayList<>();
     String mSpotifyId = null;
     DetailsAdapter adapter = null;
     Bundle extras = null;
+
+    static final String TRACK_DATA = "trackData";
 
 
     private final String LOG_TAG = DetailsActivityFragment.class.getSimpleName();
@@ -44,20 +48,38 @@ public class DetailsActivityFragment extends Fragment {
             StringBuilder titleBuilder = new StringBuilder("Top 10 Tracks \n ");
             titleBuilder.append(extras.get("Artist"));
 
-             getActivity().setTitle(titleBuilder.toString());
+            getActivity().setTitle(titleBuilder.toString());
         }
+
+        if(savedInstanceState != null && savedInstanceState.containsKey(TRACK_DATA) ) {
+            mTracksData = savedInstanceState.getParcelableArrayList(TRACK_DATA);
+        }
+
+
         super.onCreate(savedInstanceState);
     }
 
-        @Override
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        //save mTracksData list
+        outState.putParcelableArrayList(TRACK_DATA, mTracksData);
+        super.onSaveInstanceState(outState);
+    }
+
+    @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_details, container, false);
 
+
         if (extras != null) {
             mSpotifyId = extras.getString(Intent.EXTRA_TEXT);
         }
-        startFetchTrackTASk();
+
+        if(mTracksData.isEmpty()) {
+            startFetchTrackTASk();
+        }
+
 
         ListView listView = (ListView) rootView.findViewById(R.id.details_listview);
         adapter = new DetailsAdapter(getActivity(), mTracksData);
