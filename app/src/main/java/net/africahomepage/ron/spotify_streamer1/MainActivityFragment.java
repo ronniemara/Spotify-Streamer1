@@ -1,6 +1,9 @@
 package net.africahomepage.ron.spotify_streamer1;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -72,8 +75,20 @@ public class MainActivityFragment extends Fragment {
                         }
                     }
                 };
-                FetchMusicTask fetchMusicTask = new FetchMusicTask(listiner);
-                fetchMusicTask.execute(query);
+
+                ConnectivityManager cm =
+                        (ConnectivityManager)getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+
+                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+                boolean isConnected = activeNetwork != null &&
+                        activeNetwork.isConnectedOrConnecting();
+
+                if(isConnected) {
+                    FetchMusicTask fetchMusicTask = new FetchMusicTask(listiner);
+                    fetchMusicTask.execute(query);
+                } else {
+                    Toast.makeText(getActivity(), "There is no internet connection. Please try again when you have access to the internet.", Toast.LENGTH_SHORT).show();
+                }
                 return true;
             }
 
