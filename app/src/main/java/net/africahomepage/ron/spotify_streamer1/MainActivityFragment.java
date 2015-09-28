@@ -7,13 +7,20 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ListView;
+
+import android.widget.ImageView;
+
 import android.widget.SearchView;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +35,10 @@ import kaaes.spotify.webapi.android.models.Image;
  * A placeholder fragment containing a simple view.
  */
 public class MainActivityFragment extends Fragment {
+
+    private RecyclerView mRecyclerView;
+    private RecyclerView.Adapter mAdapter;
+    private RecyclerView.LayoutManager mLayoutManager;
 
     ArtistAdapter mSpotifyadapter = null;
     ArrayList<ArtistObject> mArtistData = new ArrayList<>();
@@ -61,6 +72,8 @@ public class MainActivityFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View root = inflater.inflate(R.layout.fragment_main, container, false);
+
+
         final SearchView searchEditText = (SearchView) root.findViewById(R.id.search_editText);
 
         searchEditText.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
@@ -70,22 +83,23 @@ public class MainActivityFragment extends Fragment {
                 OnTaskCompletedListiner listiner = new OnTaskCompletedListiner() {
                     @Override
                     public void taskCompleted() {
-                        if(mArtistData.isEmpty()) {
+                        if (mArtistData.isEmpty()) {
                             Toast.makeText(getActivity(), "No artist found. Please refine your search", Toast.LENGTH_SHORT).show();
                         }
                     }
                 };
 
                 ConnectivityManager cm =
-                        (ConnectivityManager)getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+                        (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
 
                 NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
                 boolean isConnected = activeNetwork != null &&
                         activeNetwork.isConnectedOrConnecting();
 
-                if(isConnected) {
+                if (isConnected) {
                     FetchMusicTask fetchMusicTask = new FetchMusicTask(listiner);
                     fetchMusicTask.execute(query);
+
                 } else {
                     Toast.makeText(getActivity(), "There is no internet connection. Please try again when you have access to the internet.", Toast.LENGTH_SHORT).show();
                 }
@@ -97,25 +111,12 @@ public class MainActivityFragment extends Fragment {
                 return false;
             }
         });
+        mSpotifyadapter = new ArtistAdapter(getActivity(), mArtistData);
 
+        RecyclerView recyclerView = (RecyclerView) inflater.inflate(R.layout.recycler_view,container,true);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recyclerView.setAdapter(mSpotifyadapter);
 
-
-        mSpotifyadapter = new ArtistAdapter(getActivity(),mArtistData);
-
-        ListView listView = (ListView) root.findViewById(R.id.mainActivity_listView);
-        listView.setAdapter(mSpotifyadapter);
-
-
-
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                ArtistObject item = mSpotifyadapter.getItem(position);
-                Intent startDetails = new Intent(getActivity(), DetailsActivity.class).putExtra(Intent.EXTRA_TEXT, item.mSpotifyId).putExtra("Artist", item.mName);
-                startActivity(startDetails);
-
-            }
-        });
 
         return root;
     }
@@ -169,4 +170,99 @@ public class MainActivityFragment extends Fragment {
     public interface OnTaskCompletedListiner {
         public void taskCompleted();
     }
-}
+
+    public static class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ViewHolder> {
+
+        private final TypedValue mTypedValue = new TypedValue();
+        private List<ArtistObject> mValues;
+        private int mBackground;
+
+        public static class ViewHolder extends RecyclerView.ViewHolder {
+            public final View mView;
+            public final TextView mArtistNAme;
+            public final ImageView mImageview;
+
+            public ViewHolder(View view) {
+                super(view);
+                mView = view;
+                mArtistNAme = (TextView) view.findViewById(R.id.artist_name_textview);
+                mImageview = (ImageView) view.findViewById(R.id.artist_imageview);
+
+            }
+        }
+
+        @Override
+        public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
+            View view = LayoutInflater.from(viewGroup.getContext())
+                    .inflate(R.layout.main_listview_textview, viewGroup, false);
+            ViewHolder holder = new ViewHolder(view);
+            return holder;
+        }
+
+        @Override
+        public void onBindViewHolder(ViewHolder viewHolder, int i) {
+
+            final ArtistObject artist = mValues.get(i);
+            viewHolder.mArtistNAme.setText(artist.mName);
+
+            Picasso.with(viewHolder.mImageview.getContext())
+                    .load(artist.mImageUrl)
+                    .into(viewHolder.mImageview);
+
+
+            viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Context context = v.getContext();
+                    Intent intent = new Intent(context, DetailsActivity.class);
+                    intent.putExtra(Intent.EXTRA_TEXT, artist.mSpotifyId).putExtra("Artist", artist.mName);
+                    context.startActivity(intent);
+                }
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return mValues.size();
+        }
+
+        public ArtistAdapter(Context context, List<ArtistObject> artistObjects) {
+            context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
+            mBackground = mTypedValue.resourceId;
+            mValues = artistObjects;
+        }
+
+    }
+
+//        @Override
+//        public View getView(int position, View convertView, ViewGroup parent) {
+//            ArtistObject current  = getItem(position);
+//
+//            LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+//
+//            ViewHolder holder;
+//            if (convertView == null) {
+//                View rowView =  inflater.inflate(R.layout.main_listview_textview, parent, false);
+//                holder = new ViewHolder();
+//                holder.imageview = (ImageView) rowView.findViewById(R.id.artist_imageview);
+//                holder.artistNAme = (TextView) rowView.findViewById(R.id.artist_name_textview);
+//                rowView.setTag(holder);
+//            } else {
+//                holder = (ViewHolder) convertView.getTag();
+//            }
+//            holder.artistNAme.setText(current.mName);
+//            if (current != null) {
+//                ;
+//            }
+//
+//            return  convertView;
+//        }
+
+
+
+
+
+    }
+
+
+

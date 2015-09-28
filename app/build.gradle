@@ -29,6 +29,7 @@ repositories {
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar']) // this line is already created in Android Studio
     compile 'com.android.support:appcompat-v7:22.2.0' // you may need this line when targeting earlier Android APIs
+    compile 'com.android.support:recyclerview-v7:21.0+'
     // Add these lines
     compile(name:'spotify-web-api-android-0.1.0', ext:'aar')
     compile 'com.squareup.picasso:picasso:2.5.2'

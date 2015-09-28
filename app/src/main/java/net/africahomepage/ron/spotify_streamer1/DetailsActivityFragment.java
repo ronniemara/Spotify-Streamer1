@@ -5,10 +5,12 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.ArrayList;
@@ -21,6 +23,7 @@ import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
+import retrofit.RetrofitError;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -31,6 +34,10 @@ public class DetailsActivityFragment extends Fragment {
     String mSpotifyId = null;
     DetailsAdapter adapter = null;
     Bundle extras = null;
+    private static final int PROGRESS = 0x1;
+
+    private ProgressBar mProgress;
+    private int mProgressStatus = 0;
 
     static final String TRACK_DATA = "trackData";
 
@@ -57,6 +64,7 @@ public class DetailsActivityFragment extends Fragment {
 
 
         super.onCreate(savedInstanceState);
+
     }
 
     @Override
@@ -70,6 +78,7 @@ public class DetailsActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_details, container, false);
+        mProgress  = (ProgressBar) rootView.findViewById(R.id.progress_bar_id);
 
 
         if (extras != null) {
@@ -93,17 +102,19 @@ public class DetailsActivityFragment extends Fragment {
         fetchTrackTAsk.execute();
 
 
+
     }
 
     public class FetchTrackTAsk extends AsyncTask<Void, Void, Void> {
+
         private final String LOG_TAG = FetchTrackTAsk.class.getSimpleName();
 
         @Override
-        protected void onPostExecute(Void tracks) {
-            if (mTracksData.isEmpty()) {
-                Toast.makeText(getActivity(), "There are no top tracks for the artist selected", Toast.LENGTH_SHORT).show();
-            }
-            adapter.notifyDataSetChanged();
+        protected void onPreExecute() {
+            mProgress.setVisibility(ProgressBar.VISIBLE);
+            mProgress.setProgress(mProgressStatus);
+            mProgress.setIndeterminate(true);
+            super.onPreExecute();
         }
 
         @Override
@@ -112,7 +123,23 @@ public class DetailsActivityFragment extends Fragment {
             SpotifyService spotify = api.getService();
             Map query = new HashMap();
             query.put("country", "CA");
-            Tracks topTracksData = spotify.getArtistTopTrack(mSpotifyId, query);
+
+            Tracks topTracksData =  null;
+
+            try {
+
+                    topTracksData = spotify.getArtistTopTrack(mSpotifyId, query);
+
+
+            } catch(RetrofitError error) {
+                Log.e(LOG_TAG, error.getMessage().toString());
+                Toast.makeText(getActivity(), "API error. Could not complete request", Toast.LENGTH_SHORT).show();
+            }
+            catch (NullPointerException e) {
+                Log.e(LOG_TAG, "NullpointerException");
+                Toast.makeText(getActivity(), "NullpointerException", Toast.LENGTH_SHORT).show();
+            }
+            
             List<Track> tracksList = topTracksData.tracks;
             if (tracksList.isEmpty()) {
                 return null;
@@ -130,6 +157,20 @@ public class DetailsActivityFragment extends Fragment {
 
             return null;
 
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+
+        @Override
+        protected void onPostExecute(Void tracks) {
+            mProgress.setVisibility(ProgressBar.GONE);
+            if (mTracksData.isEmpty()) {
+                Toast.makeText(getActivity(), "There are no top tracks for the artist selected", Toast.LENGTH_SHORT).show();
+            }
+            adapter.notifyDataSetChanged();
         }
     }
 
