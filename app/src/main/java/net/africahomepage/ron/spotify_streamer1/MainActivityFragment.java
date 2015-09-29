@@ -55,7 +55,7 @@ public class MainActivityFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         if(savedInstanceState == null || !savedInstanceState.containsKey("ArtistDAta")) {
-            mArtistData = new ArrayList<ArtistObject>();
+            mArtistData = new ArrayList<>();
         }
         else {
             mArtistData = savedInstanceState.getParcelableArrayList("ArtistDAta");
@@ -113,9 +113,10 @@ public class MainActivityFragment extends Fragment {
         });
         mSpotifyadapter = new ArtistAdapter(getActivity(), mArtistData);
 
-        RecyclerView recyclerView = (RecyclerView) inflater.inflate(R.layout.recycler_view,container,true);
-        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
-        recyclerView.setAdapter(mSpotifyadapter);
+
+        RecyclerView recycView = (RecyclerView) root.findViewById(R.id.my_recycler_view);
+        recycView.setLayoutManager(new LinearLayoutManager(getActivity()));
+        recycView.setAdapter(mSpotifyadapter);
 
 
         return root;
@@ -168,7 +169,7 @@ public class MainActivityFragment extends Fragment {
 
 
     public interface OnTaskCompletedListiner {
-        public void taskCompleted();
+         void taskCompleted();
     }
 
     public static class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ViewHolder> {
@@ -195,8 +196,8 @@ public class MainActivityFragment extends Fragment {
         public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
             View view = LayoutInflater.from(viewGroup.getContext())
                     .inflate(R.layout.main_listview_textview, viewGroup, false);
-            ViewHolder holder = new ViewHolder(view);
-            return holder;
+
+            return new ViewHolder(view);
         }
 
         @Override
@@ -233,33 +234,6 @@ public class MainActivityFragment extends Fragment {
         }
 
     }
-
-//        @Override
-//        public View getView(int position, View convertView, ViewGroup parent) {
-//            ArtistObject current  = getItem(position);
-//
-//            LayoutInflater inflater = (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-//
-//            ViewHolder holder;
-//            if (convertView == null) {
-//                View rowView =  inflater.inflate(R.layout.main_listview_textview, parent, false);
-//                holder = new ViewHolder();
-//                holder.imageview = (ImageView) rowView.findViewById(R.id.artist_imageview);
-//                holder.artistNAme = (TextView) rowView.findViewById(R.id.artist_name_textview);
-//                rowView.setTag(holder);
-//            } else {
-//                holder = (ViewHolder) convertView.getTag();
-//            }
-//            holder.artistNAme.setText(current.mName);
-//            if (current != null) {
-//                ;
-//            }
-//
-//            return  convertView;
-//        }
-
-
-
 
 
     }
