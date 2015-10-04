@@ -4,4 +4,5 @@
     <string name="action_settings">Settings</string>
     <string name="ArtistImage">Artist Image</string>
     <string name="title_activity_details">Top 10 Tracks</string>
+    <string name="action_search">Search</string>
 </resources>
