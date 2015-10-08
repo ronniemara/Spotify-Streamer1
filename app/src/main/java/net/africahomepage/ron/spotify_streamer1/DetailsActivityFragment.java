@@ -5,6 +5,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,7 +34,7 @@ public class DetailsActivityFragment extends Fragment {
 
     ArrayList<TrackObject> mTracksData = new ArrayList<>();
     String mSpotifyId = null;
-    DetailsAdapter adapter = null;
+    DetailsAdapter mAdpater = null;
     Bundle extras = null;
     private static final int PROGRESS = 0x1;
 
@@ -89,90 +91,19 @@ public class DetailsActivityFragment extends Fragment {
             startFetchTrackTASk();
         }
 
+        mAdpater = new DetailsAdapter(getActivity(), mTracksData);
 
-        ListView listView = (ListView) rootView.findViewById(R.id.details_listview);
-        adapter = new DetailsAdapter(getActivity(), mTracksData);
-        listView.setAdapter(adapter);
+        RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.details_listview);
+        recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
+        recyclerView.setAdapter(mAdpater);
 
         return rootView;
     }
 
     private void startFetchTrackTASk() {
-        FetchTrackTAsk fetchTrackTAsk = new FetchTrackTAsk();
+        FetchTrackTAsk fetchTrackTAsk = new FetchTrackTAsk(mProgress,mProgressStatus, mSpotifyId, getActivity(), mAdpater, mTracksData);
         fetchTrackTAsk.execute();
 
-
-
     }
-
-    public class FetchTrackTAsk extends AsyncTask<Void, Void, Void> {
-
-        private final String LOG_TAG = FetchTrackTAsk.class.getSimpleName();
-
-        @Override
-        protected void onPreExecute() {
-            mProgress.setVisibility(ProgressBar.VISIBLE);
-            mProgress.setProgress(mProgressStatus);
-            mProgress.setIndeterminate(true);
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            SpotifyApi api = new SpotifyApi();
-            SpotifyService spotify = api.getService();
-            Map query = new HashMap();
-            query.put("country", "CA");
-
-            Tracks topTracksData =  null;
-
-            try {
-
-                    topTracksData = spotify.getArtistTopTrack(mSpotifyId, query);
-
-
-            } catch(RetrofitError error) {
-                Log.e(LOG_TAG, error.getMessage().toString());
-                Toast.makeText(getActivity(), "API error. Could not complete request", Toast.LENGTH_SHORT).show();
-            }
-            catch (NullPointerException e) {
-                Log.e(LOG_TAG, "NullpointerException");
-                Toast.makeText(getActivity(), "NullpointerException", Toast.LENGTH_SHORT).show();
-            }
-            
-            List<Track> tracksList = topTracksData.tracks;
-            if (tracksList.isEmpty()) {
-                return null;
-            }
-            mTracksData.clear();
-
-            for (int i = 0; i < tracksList.size(); i++) {
-                Track track = tracksList.get(i);
-                String albumSmallImage = track.album.images.get(1).url;
-                String albumLargeImage = track.album.images.get(0).url;
-
-                mTracksData.add(new TrackObject(track.album.name, track.name, albumSmallImage, albumLargeImage, track.preview_url));
-            }
-
-
-            return null;
-
-        }
-
-        @Override
-        protected void onProgressUpdate(Void... values) {
-            super.onProgressUpdate(values);
-        }
-
-        @Override
-        protected void onPostExecute(Void tracks) {
-            mProgress.setVisibility(ProgressBar.GONE);
-            if (mTracksData.isEmpty()) {
-                Toast.makeText(getActivity(), "There are no top tracks for the artist selected", Toast.LENGTH_SHORT).show();
-            }
-            adapter.notifyDataSetChanged();
-        }
-    }
-
 
 }

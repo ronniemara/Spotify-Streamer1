@@ -2,11 +2,12 @@ package net.africahomepage.ron.spotify_streamer1;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.support.v7.widget.RecyclerView;
 
 /**
  * Created by ron on 11/07/15.
  */
-public class TrackObject implements Parcelable {
+public class TrackObject  implements Parcelable {
     public String mTrackAlbum;
     public String mTrackTitle;
     public String mTrackSmallImageUrl;

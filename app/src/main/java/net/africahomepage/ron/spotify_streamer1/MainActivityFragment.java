@@ -7,16 +7,20 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
 import android.widget.ImageView;
 
-import android.widget.SearchView;
+import android.support.v7.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,8 +44,9 @@ public class MainActivityFragment extends Fragment {
     private RecyclerView.Adapter mAdapter;
     private RecyclerView.LayoutManager mLayoutManager;
 
-    ArtistAdapter mSpotifyadapter = null;
-    ArrayList<ArtistObject> mArtistData = new ArrayList<>();
+    public ArtistAdapter mSpotifyadapter = null;
+    public ArrayList<ArtistObject> mArtistData = new ArrayList<>();
+
 
     public MainActivityFragment() {
     }
@@ -52,34 +57,19 @@ public class MainActivityFragment extends Fragment {
         super.onSaveInstanceState(outState);
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        if(savedInstanceState == null || !savedInstanceState.containsKey("ArtistDAta")) {
-            mArtistData = new ArrayList<>();
-        }
-        else {
-            mArtistData = savedInstanceState.getParcelableArrayList("ArtistDAta");
 
-        }
-        super.onCreate(savedInstanceState);
-
-        // Get the intent, verify the action and get the query
-
-    }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 
-        View root = inflater.inflate(R.layout.fragment_main, container, false);
-
-
-        final SearchView searchEditText = (SearchView) root.findViewById(R.id.search_editText);
-
-        searchEditText.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        inflater.inflate(R.menu.main_activity_menu, menu);
+        MenuItem menuItem = menu.findItem(R.id.action_search);
+        final SearchView searchView = (SearchView) MenuItemCompat.getActionView(menuItem);
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
-                searchEditText.clearFocus();
+                searchView.clearFocus();
                 OnTaskCompletedListiner listiner = new OnTaskCompletedListiner() {
                     @Override
                     public void taskCompleted() {
@@ -97,7 +87,7 @@ public class MainActivityFragment extends Fragment {
                         activeNetwork.isConnectedOrConnecting();
 
                 if (isConnected) {
-                    FetchMusicTask fetchMusicTask = new FetchMusicTask(listiner);
+                    FetchMusicTask fetchMusicTask = new FetchMusicTask(listiner, mSpotifyadapter, mArtistData);
                     fetchMusicTask.execute(query);
 
                 } else {
@@ -111,129 +101,46 @@ public class MainActivityFragment extends Fragment {
                 return false;
             }
         });
-        mSpotifyadapter = new ArtistAdapter(getActivity(), mArtistData);
+        super.onCreateOptionsMenu(menu, inflater);
+    }
 
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        if(savedInstanceState == null || !savedInstanceState.containsKey("ArtistDAta")) {
+            mArtistData = new ArrayList<>();
+        }
+        else {
+            mArtistData = savedInstanceState.getParcelableArrayList("ArtistDAta");
+
+        }
+
+        setHasOptionsMenu(true);
+        super.onCreate(savedInstanceState);
+
+        // Get the intent, verify the action and get the query
+
+    }
+
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) {
+
+        View root = inflater.inflate(R.layout.fragment_main, container, false);
+
+        mSpotifyadapter = new ArtistAdapter(getActivity(), mArtistData);
 
         RecyclerView recycView = (RecyclerView) root.findViewById(R.id.my_recycler_view);
         recycView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recycView.setAdapter(mSpotifyadapter);
 
-
         return root;
     }
 
-        public class FetchMusicTask extends AsyncTask<String, Void, Void> {
-
-            private final String LOG_TAG =  FetchMusicTask.class.getSimpleName();
-            public OnTaskCompletedListiner listener = null;
-
-
-            public FetchMusicTask(OnTaskCompletedListiner listener) {
-                this.listener = listener;
-            }
-
-        protected void onPostExecute(Void result) {
-
-            listener.taskCompleted();
-
-            mSpotifyadapter.notifyDataSetChanged();
-        }
-
-        @Override
-        protected Void doInBackground(String... artist) {
-            SpotifyApi api = new SpotifyApi();
-            SpotifyService spotify = api.getService();
-            ArtistsPager artistsData = spotify.searchArtists(artist[0]);
-            List<Artist> artistInfo = artistsData.artists.items;
-
-            mArtistData.clear();
-
-            if (artistInfo.isEmpty()) {
-                return null;
-            }
-
-            for (int i = 0; i < artistInfo.size(); i++) {
-                Artist art = artistInfo.get(i);
-                List<Image> images = art.images;
-                mArtistData.add(new ArtistObject(
-                                    art.name,
-                                    art.id,
-                                    images.isEmpty() ? null : images.get(0).url
-                                ));
-            }
-
-            return null;
-        }
-    }
 
 
 
-    public interface OnTaskCompletedListiner {
-         void taskCompleted();
-    }
-
-    public static class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ViewHolder> {
-
-        private final TypedValue mTypedValue = new TypedValue();
-        private List<ArtistObject> mValues;
-        private int mBackground;
-
-        public static class ViewHolder extends RecyclerView.ViewHolder {
-            public final View mView;
-            public final TextView mArtistNAme;
-            public final ImageView mImageview;
-
-            public ViewHolder(View view) {
-                super(view);
-                mView = view;
-                mArtistNAme = (TextView) view.findViewById(R.id.artist_name_textview);
-                mImageview = (ImageView) view.findViewById(R.id.artist_imageview);
-
-            }
-        }
-
-        @Override
-        public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
-            View view = LayoutInflater.from(viewGroup.getContext())
-                    .inflate(R.layout.main_listview_textview, viewGroup, false);
-
-            return new ViewHolder(view);
-        }
-
-        @Override
-        public void onBindViewHolder(ViewHolder viewHolder, int i) {
-
-            final ArtistObject artist = mValues.get(i);
-            viewHolder.mArtistNAme.setText(artist.mName);
-
-            Picasso.with(viewHolder.mImageview.getContext())
-                    .load(artist.mImageUrl)
-                    .into(viewHolder.mImageview);
 
 
-            viewHolder.mView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Context context = v.getContext();
-                    Intent intent = new Intent(context, DetailsActivity.class);
-                    intent.putExtra(Intent.EXTRA_TEXT, artist.mSpotifyId).putExtra("Artist", artist.mName);
-                    context.startActivity(intent);
-                }
-            });
-        }
-
-        @Override
-        public int getItemCount() {
-            return mValues.size();
-        }
-
-        public ArtistAdapter(Context context, List<ArtistObject> artistObjects) {
-            context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
-            mBackground = mTypedValue.resourceId;
-            mValues = artistObjects;
-        }
-
-    }
 
 
     }
