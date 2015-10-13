@@ -7,19 +7,19 @@ import android.support.v7.widget.RecyclerView;
 /**
  * Created by ron on 11/07/15.
  */
-public class TrackObject  implements Parcelable {
+public class TrackObject implements Parcelable {
     public String mTrackAlbum;
     public String mTrackTitle;
     public String mTrackSmallImageUrl;
     public String mTrackLargeImageUrl;
     public String mPreviewUrl;
 
-    public TrackObject(String trackAlbum, String trackTitle, String trackSmallImageUrl, String trackLargeImageUrl, String previewUrl ) {
-        this. mTrackAlbum = trackAlbum;
-        this.mTrackTitle = trackTitle;
-        this.mTrackSmallImageUrl = trackSmallImageUrl;
-        this.mTrackLargeImageUrl= trackLargeImageUrl;
-        this.mPreviewUrl = previewUrl;
+    public TrackObject(String trackAlbum, String trackTitle, String trackSmallImageUrl, String trackLargeImageUrl, String previewUrl) {
+        mTrackAlbum = trackAlbum;
+        mTrackTitle = trackTitle;
+        mTrackSmallImageUrl = trackSmallImageUrl;
+        mTrackLargeImageUrl = trackLargeImageUrl;
+        mPreviewUrl = previewUrl;
     }
 
     private TrackObject(Parcel in) {
@@ -41,6 +41,7 @@ public class TrackObject  implements Parcelable {
         dest.writeString(mTrackTitle);
         dest.writeString(mTrackSmallImageUrl);
         dest.writeString(mTrackLargeImageUrl);
+        dest.writeString(mPreviewUrl);
     }
 
     public static final Parcelable.Creator<TrackObject> CREATOR
@@ -58,7 +59,7 @@ public class TrackObject  implements Parcelable {
 
         @Override
         public TrackObject createFromParcel(Parcel source, ClassLoader loader) {
-            return null;
+            return new TrackObject(source);
         }
     };
 }

@@ -2,6 +2,7 @@ package net.africahomepage.ron.spotify_streamer1;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -17,7 +18,7 @@ import java.util.List;
 /**
  * Created by ron on 08/10/15.
  */
-class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ViewHolder> {
+class ArtistsAdapter extends RecyclerView.Adapter<ArtistsAdapter.ViewHolder> {
 
     private final TypedValue mTypedValue = new TypedValue();
     private List<ArtistObject> mValues;
@@ -59,9 +60,12 @@ class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ViewHolder> {
         viewHolder.mView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+
                 Context context = v.getContext();
                 Intent intent = new Intent(context, DetailsActivity.class);
-                intent.putExtra(Intent.EXTRA_TEXT, artist.mSpotifyId).putExtra("Artist", artist.mName);
+                Bundle bundle = new Bundle();
+                bundle.putParcelable("net.africahomepage.ron.spotify_streamer1.artist", artist);
+                intent.putExtras(bundle);
                 context.startActivity(intent);
             }
         });
@@ -72,7 +76,7 @@ class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ViewHolder> {
         return mValues.size();
     }
 
-    public ArtistAdapter(Context context, List<ArtistObject> artistObjects) {
+    public ArtistsAdapter(Context context, List<ArtistObject> artistObjects) {
         context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
         mBackground = mTypedValue.resourceId;
         mValues = artistObjects;

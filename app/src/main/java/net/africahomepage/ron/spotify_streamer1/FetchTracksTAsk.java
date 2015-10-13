@@ -20,23 +20,25 @@ import retrofit.RetrofitError;
 /**
  * Created by ron on 08/10/15.
  */
-public class FetchTrackTAsk extends AsyncTask<Void, Void, Void> {
+public class FetchTracksTAsk extends AsyncTask<Void, Void, Void> {
 
-    private final String LOG_TAG = FetchTrackTAsk.class.getSimpleName();
+    private final String LOG_TAG = FetchTracksTAsk.class.getSimpleName();
+    public OnTaskCompletedListener mListener = null;
     private ProgressBar mProgress;
     ArrayList<TrackObject> mTracksData = null;
     String mSpotifyId = "";
     Context mContext = null;
-    DetailsAdapter mAdapter = null;
+    TracksAdapter mAdapter = null;
     int mProgressStatus;
 
-    public FetchTrackTAsk(ProgressBar progressBar,int progressStatus, String spotifyId, Context context,  DetailsAdapter adapter, ArrayList<TrackObject> tracks) {
+    public FetchTracksTAsk(OnTaskCompletedListener listener, ProgressBar progressBar, int progressStatus, String spotifyId, Context context, TracksAdapter adapter, ArrayList<TrackObject> tracks) {
         mProgress =progressBar;
         mSpotifyId = spotifyId;
         mContext = context;
         mTracksData = tracks;
         mAdapter = adapter;
         mProgressStatus =progressStatus;
+        mListener = listener;
 
     }
 
@@ -94,11 +96,12 @@ public class FetchTrackTAsk extends AsyncTask<Void, Void, Void> {
     }
 
     @Override
-    protected void onPostExecute(Void tracks) {
+    protected void onPostExecute(Void result) {
         mProgress.setVisibility(ProgressBar.GONE);
-        if (mTracksData.isEmpty()) {
-            Toast.makeText(mContext, "There are no top tracks for the artist selected", Toast.LENGTH_SHORT).show();
-        }
+        mListener.taskCompleted();
+
         mAdapter.notifyDataSetChanged();
+
+
     }
 }

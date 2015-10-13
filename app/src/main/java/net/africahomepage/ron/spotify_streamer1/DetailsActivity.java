@@ -1,9 +1,12 @@
 package net.africahomepage.ron.spotify_streamer1;
 
+import android.content.Context;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 public class DetailsActivity extends AppCompatActivity {
 

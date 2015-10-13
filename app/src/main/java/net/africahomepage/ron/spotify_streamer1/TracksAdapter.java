@@ -4,10 +4,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -18,37 +18,23 @@ import java.util.List;
 /**
  * Created by ron on 07/07/15.
  */
-public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.ViewHolder> {
+public class TracksAdapter extends RecyclerView.Adapter<TracksAdapter.ViewHolder> {
 
-    List<TrackObject> mTrackData;
+    private List<TrackObject> mTrackData;
+    private final TypedValue mTypedValue = new TypedValue();
+    private int mBackground=0;
 
 
-    public DetailsAdapter(Context context, List<TrackObject> trackObjects) {
+    public TracksAdapter(Context context, List<TrackObject> trackObjects) {
+        context.getTheme().resolveAttribute(R.attr.selectableItemBackground, mTypedValue, true);
+        mBackground = mTypedValue.resourceId;
         mTrackData = trackObjects;
     }
-
-//    @Override
-//    public View getView(int position, View convertView, ViewGroup parent) {
-//        TrackObject current  = getItem(position);
-//
-//        View rootView = LayoutInflater.from(getContext()).inflate(R.layout.details_listview_layout, parent, false);
-//
-//        ImageView imageview = (ImageView) rootView.findViewById(R.id.details_listview_layout_imageview);
-//        Picasso.with(getContext()).load(current.mTrackSmallImageUrl).into(imageview);
-//
-//        TextView trackTitle = (TextView) rootView.findViewById(R.id.details_listview_layout_song);
-//        trackTitle.setText(current.mTrackTitle);
-//
-//        TextView trackAlbum = (TextView) rootView.findViewById(R.id.details_listview_layout_album);
-//        trackAlbum.setText(current.mTrackAlbum);
-//
-//        return  rootView;
-//    }
 
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.details_listview_layout,parent);
+                .inflate(R.layout.details_listview_layout, parent, false);
         return new ViewHolder(view);
     }
 
@@ -81,7 +67,7 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.ViewHold
         return 0;
     }
 
-    public static class ViewHolder extends RecyclerView.ViewHolder{
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         View mView;
         ImageView mImageview;
         TextView mTrackTitle;
@@ -95,7 +81,7 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.ViewHold
             mTrackTitle = (TextView) view.findViewById(R.id.details_listview_layout_song);
             mTrackAlbum = (TextView) view.findViewById(R.id.details_listview_layout_album);
 
-                                }
+        }
     }
 }
 

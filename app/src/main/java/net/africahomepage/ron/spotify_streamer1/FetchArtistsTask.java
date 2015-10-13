@@ -1,6 +1,7 @@
 package net.africahomepage.ron.spotify_streamer1;
 
 import android.os.AsyncTask;
+import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,16 +15,16 @@ import kaaes.spotify.webapi.android.models.Image;
 /**
  * Created by ron on 08/10/15.
  */
-class FetchMusicTask extends AsyncTask<String, Void, Void> {
+public class FetchArtistsTask extends AsyncTask<String, Void, Void> {
 
-    private final String LOG_TAG =  FetchMusicTask.class.getSimpleName();
-    public OnTaskCompletedListiner listener = null;
-    private ArtistAdapter adapter = null;
+    private final String LOG_TAG =  FetchArtistsTask.class.getSimpleName();
+    public OnTaskCompletedListener listener = null;
+    private ArtistsAdapter adapter = null;
     private ArrayList<ArtistObject> mArtists = null;
 
 
 
-    public FetchMusicTask(OnTaskCompletedListiner listener, ArtistAdapter adapter, ArrayList<ArtistObject> artists) {
+    public FetchArtistsTask(OnTaskCompletedListener listener, ArtistsAdapter adapter, ArrayList<ArtistObject> artists) {
         this.listener = listener;
         this.adapter = adapter;
         this.mArtists = artists;
@@ -40,7 +41,15 @@ class FetchMusicTask extends AsyncTask<String, Void, Void> {
     protected Void doInBackground(String... artist) {
         SpotifyApi api = new SpotifyApi();
         SpotifyService spotify = api.getService();
-        ArtistsPager artistsData = spotify.searchArtists(artist[0]);
+
+        ArtistsPager artistsData = null;
+        try {
+            artistsData = spotify.searchArtists(artist[0]);
+
+        } catch(Exception e) {
+            Log.e(LOG_TAG, e.getMessage().toString());
+
+        }
         List<Artist> artistInfo = artistsData.artists.items;
 
         mArtists.clear();

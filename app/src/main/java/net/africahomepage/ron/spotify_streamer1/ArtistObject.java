@@ -12,7 +12,7 @@ public class ArtistObject implements Parcelable {
     public String mName;
     public String mSpotifyId;
     public String mImageUrl;
-    public String mPreviewUrl;
+
 
 
 
@@ -42,6 +42,10 @@ public class ArtistObject implements Parcelable {
 
                     return new ArtistObject(source);
                 }
+
+
+
+
             };
 
 
@@ -55,10 +59,10 @@ public class ArtistObject implements Parcelable {
         dest.writeString(mName);
         dest.writeString(mSpotifyId);
         dest.writeString(mImageUrl);
-        String spotifyID = mSpotifyId;
-        Bundle bundle = new Bundle();
-        bundle.putString("SPOTIFYID", spotifyID);
-        bundle.putString("Artist", mName);
-        dest.writeBundle(bundle);
+//        String spotifyID = mSpotifyId;
+//        Bundle bundle = new Bundle();
+//        bundle.putString("SPOTIFYID", spotifyID);
+//        bundle.putString("Artist", mName);
+//        dest.writeBundle(bundle);
     }
 }
