@@ -1,9 +1,13 @@
 package net.africahomepage.ron.spotify_streamer1;
 
+import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +15,15 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import kaaes.spotify.webapi.android.SpotifyApi;
+import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Track;
+import kaaes.spotify.webapi.android.models.Tracks;
+import retrofit.RetrofitError;
 
 /**
  * A placeholder fragment containing a simple view.
@@ -20,6 +33,8 @@ public class DetailsActivityFragment extends Fragment implements OnTaskCompleted
     ArrayList<TrackObject> mTracksData = new ArrayList<>();
     TracksAdapter mAdpater = null;
     ArtistObject mArtist = null;
+
+    final String LOG_TAG = "DetailsActivityFragment";
 
 
     private ProgressBar mProgress;
@@ -33,23 +48,29 @@ public class DetailsActivityFragment extends Fragment implements OnTaskCompleted
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
+        super.onCreate(savedInstanceState);
+
         if (savedInstanceState != null && savedInstanceState.containsKey(TRACK_DATA)) {
             mTracksData = savedInstanceState.getParcelableArrayList(TRACK_DATA);
         }
 
-        Bundle extras = getActivity().getIntent().getExtras();
-        // Set title
-        if (extras != null && extras.containsKey("net.africahomepage.ron.spotify_streamer1.artist")) {
-            mArtist = extras.getParcelable("net.africahomepage.ron.spotify_streamer1.artist");
-            StringBuilder titleBuilder = new StringBuilder("Top 10 Tracks \n ");
-            titleBuilder.append(mArtist.mName);
+        Intent intent = getActivity().getIntent();
+        intent.setExtrasClassLoader(ArtistObject.class.getClassLoader());
 
-            getActivity().setTitle(titleBuilder.toString());
-        }
+        //Bundle extras = intent.getExtras();
+
+        // Set title
+        //if (extras != null && extras.containsKey("net.africahomepage.ron.spotify_streamer1.artist")) {
+        mArtist = intent.getParcelableExtra("net.africahomepage.ron.spotify_streamer1.artist");
+        StringBuilder titleBuilder = new StringBuilder("Top 10 Tracks \n ");
+        titleBuilder.append(mArtist.mName);
+
+        getActivity().setTitle(titleBuilder.toString());
+        //}
 
         mAdpater = new TracksAdapter(getActivity(), mTracksData);
 
-        super.onCreate(savedInstanceState);
+
 
     }
 
@@ -63,12 +84,14 @@ public class DetailsActivityFragment extends Fragment implements OnTaskCompleted
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_details, container, true);
+        View rootView = inflater.inflate(R.layout.fragment_details, container, false);
         mProgress = (ProgressBar) rootView.findViewById(R.id.progress_bar_id);
 
         if (mTracksData.isEmpty()) {
             startFetchTrackTASk();
         }
+
+        Log.d(LOG_TAG, mTracksData.isEmpty() ? "is empty" : "is not empty");
 
         RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.details_listview);
         recyclerView.setLayoutManager(new LinearLayoutManager(recyclerView.getContext()));
@@ -78,7 +101,7 @@ public class DetailsActivityFragment extends Fragment implements OnTaskCompleted
     }
 
     private void startFetchTrackTASk() {
-        FetchTracksTAsk fetchTracksTAsk = new FetchTracksTAsk(this,mProgress, mProgressStatus, mArtist.mSpotifyId, getActivity(), mAdpater, mTracksData);
+        FetchTracksTAsk fetchTracksTAsk = new FetchTracksTAsk();
         fetchTracksTAsk.execute();
 
     }
@@ -87,9 +110,78 @@ public class DetailsActivityFragment extends Fragment implements OnTaskCompleted
     public void taskCompleted() {
 
         if (mTracksData.isEmpty()) {
-            Toast.makeText(getActivity(), "No artist found. Please refine your search", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), "No top ten tracks found. Please refine your search", Toast.LENGTH_SHORT).show();
         }
     }
 
+    public class FetchTracksTAsk extends AsyncTask<Void, Void, Void> {
 
+        private final String LOG_TAG = FetchTracksTAsk.class.getSimpleName();
+
+
+        @Override
+        protected void onPreExecute() {
+            mProgress.setVisibility(ProgressBar.VISIBLE);
+            mProgress.setProgress(mProgressStatus);
+            mProgress.setIndeterminate(true);
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(Void... params) {
+            SpotifyApi api = new SpotifyApi();
+            SpotifyService spotify = api.getService();
+            Map query = new HashMap();
+            query.put("country", "CA");
+
+            Tracks topTracksData =  null;
+
+            try {
+
+                topTracksData = spotify.getArtistTopTrack(mArtist.mSpotifyId, query);
+
+
+            } catch(RetrofitError error) {
+                Log.e(LOG_TAG, error.getMessage().toString());
+                Toast.makeText(getActivity(), "API error. Could not complete request", Toast.LENGTH_SHORT).show();
+            }
+            catch (NullPointerException e) {
+                Log.e(LOG_TAG, "NullpointerException");
+                Toast.makeText(getActivity(), "NullpointerException", Toast.LENGTH_SHORT).show();
+            }
+
+            List<Track> tracksList = topTracksData.tracks;
+            if (tracksList.isEmpty()) {
+                return null;
+            }
+            mTracksData.clear();
+
+            for (int i = 0; i < tracksList.size(); i++) {
+                Track track = tracksList.get(i);
+                String albumSmallImage = track.album.images.get(1).url;
+                String albumLargeImage = track.album.images.get(0).url;
+
+                mTracksData.add(new TrackObject(track.album.name, track.name, albumSmallImage, albumLargeImage, track.preview_url));
+            }
+
+
+            return null;
+
+        }
+
+        @Override
+        protected void onProgressUpdate(Void... values) {
+            super.onProgressUpdate(values);
+        }
+
+        @Override
+        protected void onPostExecute(Void tracks) {
+            mProgress.setVisibility(ProgressBar.GONE);
+
+            taskCompleted();
+
+            Log.d(LOG_TAG, mTracksData.get(0).mTrackTitle);
+            mAdpater.notifyDataSetChanged();
+        }
+    }
 }

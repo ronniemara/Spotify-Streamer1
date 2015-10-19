@@ -63,9 +63,9 @@ class ArtistsAdapter extends RecyclerView.Adapter<ArtistsAdapter.ViewHolder> {
 
                 Context context = v.getContext();
                 Intent intent = new Intent(context, DetailsActivity.class);
-                Bundle bundle = new Bundle();
-                bundle.putParcelable("net.africahomepage.ron.spotify_streamer1.artist", artist);
-                intent.putExtras(bundle);
+               // Bundle bundle = new Bundle();
+               intent.putExtra("net.africahomepage.ron.spotify_streamer1.artist", artist);
+
                 context.startActivity(intent);
             }
         });
