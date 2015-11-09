@@ -14,11 +14,11 @@ public class TrackObject implements Parcelable {
     public String mPreviewUrl;
 
     public TrackObject(String trackAlbum, String trackTitle, String trackSmallImageUrl, String trackLargeImageUrl, String previewUrl ) {
-        this. mTrackAlbum = trackAlbum;
-        this.mTrackTitle = trackTitle;
-        this.mTrackSmallImageUrl = trackSmallImageUrl;
-        this.mTrackLargeImageUrl= trackLargeImageUrl;
-        this.mPreviewUrl = previewUrl;
+        mTrackAlbum = trackAlbum;
+        mTrackTitle = trackTitle;
+        mTrackSmallImageUrl = trackSmallImageUrl;
+        mTrackLargeImageUrl= trackLargeImageUrl;
+        mPreviewUrl = previewUrl;
     }
 
     private TrackObject(Parcel in) {
@@ -40,6 +40,7 @@ public class TrackObject implements Parcelable {
         dest.writeString(mTrackTitle);
         dest.writeString(mTrackSmallImageUrl);
         dest.writeString(mTrackLargeImageUrl);
+        dest.writeString(mPreviewUrl);
     }
 
     public static final Parcelable.Creator<TrackObject> CREATOR
@@ -57,7 +58,7 @@ public class TrackObject implements Parcelable {
 
         @Override
         public TrackObject createFromParcel(Parcel source, ClassLoader loader) {
-            return null;
+            return new TrackObject(source);
         }
     };
 }
