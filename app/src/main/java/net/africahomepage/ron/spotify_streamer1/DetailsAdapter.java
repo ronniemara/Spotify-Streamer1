@@ -6,14 +6,14 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.List;
+
+import static android.support.v4.app.ActivityCompat.startActivity;
 
 /**
  * Created by ron on 07/07/15.
@@ -29,17 +29,11 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.TrackVie
     @Override
     public TrackViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
 
-        View rootView = LayoutInflater.from(parent.getContext()).inflate(R.layout.details_listview_layout, parent, false);
+        View rootView = LayoutInflater.from(parent.getContext()).inflate(R.layout.details_recycler_view_layout, parent, false);
 
         TrackViewHolder viewHolder = new TrackViewHolder(rootView);
 
-        viewHolder.container.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(v.getContext(), SongPlayerActivity.class);
 
-            }
-        });
 
         return  viewHolder;
     }
@@ -52,7 +46,7 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.TrackVie
     @Override
     public void onBindViewHolder(TrackViewHolder holder, int position) {
 
-        TrackObject item = mDataSet.get(position);
+        final TrackObject item = mDataSet.get(position);
 
         Picasso.with(holder.container.getContext())
                 .load(item.mTrackSmallImageUrl)
@@ -61,6 +55,19 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.TrackVie
         holder.trackTitle.setText(item.mTrackTitle);
 
         holder.trackAlbum.setText(item.mTrackAlbum);
+
+        holder.container.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+                Context context = v.getContext();
+                Intent intent = new Intent(context, SongPlayerActivity.class);
+                intent.putExtra("net.africahomepage.ron.Track", item);
+                context.startActivity(intent);
+
+            }
+        });
     }
 
     public class TrackViewHolder extends RecyclerView.ViewHolder {

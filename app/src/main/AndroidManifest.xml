@@ -29,6 +29,14 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="net.africahomepage.ron.spotify_streamer1.MainActivity" />
         </activity>
+        <activity
+            android:name=".SongPlayerActivity"
+            android:parentActivityName=".DetailsActivity"
+            >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="net.africahomepage.ron.spotify_streamer1.DetailsActivity" />
+        </activity>
     </application>
 
 </manifest>
