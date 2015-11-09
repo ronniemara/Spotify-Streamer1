@@ -13,9 +13,9 @@
         android:id="@+id/progress_bar_id"
         android:indeterminate="true"/>
 
-    <ListView
+    <RecyclerView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:id="@+id/details_listview"></ListView>
+        android:id="@+id/details_recycler_view"></RecyclerView>
 
 </LinearLayout>

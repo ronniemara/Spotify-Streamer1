@@ -5,6 +5,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -90,9 +92,11 @@ public class DetailsActivityFragment extends Fragment {
         }
 
 
-        ListView listView = (ListView) rootView.findViewById(R.id.details_listview);
-        adapter = new DetailsAdapter(getActivity(), mTracksData);
-        listView.setAdapter(adapter);
+        RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.details_recycler_view);
+        recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
+
+        adapter = new DetailsAdapter(mTracksData);
+        recyclerView.setAdapter(adapter);
 
         return rootView;
     }
