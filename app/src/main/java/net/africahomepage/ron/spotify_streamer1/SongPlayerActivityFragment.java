@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOverlay;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
@@ -24,6 +25,8 @@ public class SongPlayerActivityFragment extends Fragment{
         if(extras.containsKey("net.africahomepage.ron.Track")) {
             mTrack = extras.getParcelable("net.africahomepage.ron.Track");
         }
+
+        getActivity().setTitle((CharSequence) mTrack.mTrackTitle + " from album " + mTrack.mTrackAlbum);
         super.onCreate(savedInstanceState);
     }
 
@@ -33,6 +36,13 @@ public class SongPlayerActivityFragment extends Fragment{
         View view = inflater.inflate(R.layout.fragment_song_player, container);
         ImageView imageView = (ImageView) view.findViewById(R.id.song_player_image_view);
         Picasso.with(getActivity()).load(mTrack.mTrackLargeImageUrl).into(imageView);
+
+        TextView titleTextView = (TextView) view.findViewById(R.id.song_title_text_view);
+        titleTextView.setText(mTrack.mTrackTitle);
+
+        TextView albumTextView = (TextView) view.findViewById(R.id.song_title_text_view);
+        albumTextView.setText(mTrack.mTrackAlbum);
+
 
         return view;
     }

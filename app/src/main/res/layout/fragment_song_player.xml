@@ -41,7 +41,7 @@
             <ImageView
                 android:layout_width="50dip"
                 android:layout_height="50dip"
-                android:src="@android:drawable/ic_media_play"
+                android:src="@android:drawable/ic_media_pause"
 
                 android:id="@+id/play_button"/>
             <ImageView
