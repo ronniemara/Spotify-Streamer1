@@ -9,8 +9,15 @@ import android.view.ViewGroup;
 import android.view.ViewOverlay;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.media.MediaPlayer;
+import android.net.Uri.Builder;
+import android.net.Uri;
+import android.widget.Toast;
+import java.io.IOException;
+
 
 import com.squareup.picasso.Picasso;
+
 
 /**
  * Created by ron on 08/11/15.
@@ -18,6 +25,9 @@ import com.squareup.picasso.Picasso;
 public class SongPlayerActivityFragment extends Fragment{
 
     TrackObject mTrack= null;
+    MediaPlayer mMediaPlayer = null;
+    MediaPlayerOnErrorListener errorListener = null;
+    public final String LOG_TAG = SongPlayerActivityFragment.class.getSimpleName();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -25,6 +35,29 @@ public class SongPlayerActivityFragment extends Fragment{
         if(extras.containsKey("net.africahomepage.ron.Track")) {
             mTrack = extras.getParcelable("net.africahomepage.ron.Track");
         }
+
+        errorListener = new MediaPlayerOnErrorListener();
+        mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setOnErrorListener(errorListener);
+
+        Uri uri = new Builder().appendPath(mTrack.mPreviewUrl).build();
+        try{
+          mMediaPlayer.setDataSource(getActivity(), uri );
+        } catch (IllegalArgumentException e) {
+          Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+          Log.e(LOG_TAG,e.getMessage());
+        } catch(IOException e) {
+          Log.e(LOG_TAG,e.getMessage());
+          Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+        }
+        try{
+          mMediaPlayer.prepareAsync();
+        } catch(IllegalStateException e) {
+          Log.e(LOG_TAG,e.getMessage());
+          Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT);
+        }
+        mMediaPlayer.setOnPreparedListener(new MediaPlayerOnPreparedListener());
+
 
         getActivity().setTitle((CharSequence) mTrack.mTrackTitle + " from album " + mTrack.mTrackAlbum);
         super.onCreate(savedInstanceState);
