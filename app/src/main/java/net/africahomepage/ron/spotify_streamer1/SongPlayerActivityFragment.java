@@ -10,13 +10,14 @@ import android.view.ViewOverlay;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.media.MediaPlayer;
-import android.net.Uri.Builder;
-import android.net.Uri;
+
+
 import android.widget.Toast;
 import android.media.AudioManager;
 import android.util.Log;
 
 import java.io.IOException;
+
 
 
 import com.squareup.picasso.Picasso;
@@ -43,24 +44,7 @@ public class SongPlayerActivityFragment extends Fragment{
         mMediaPlayer = new MediaPlayer();
         mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mMediaPlayer.setOnErrorListener(errorListener);
-
-        Uri uri = new Builder().appendPath(mTrack.mPreviewUrl).build();
-        try{
-          mMediaPlayer.setDataSource(getActivity(), uri );
-          mMediaPlayer.prepareAsync();
-        } catch (IllegalArgumentException e) {
-          Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
-          Log.e(LOG_TAG,e.getMessage());
-        } catch(IOException e) {
-          Log.e(LOG_TAG,e.getMessage());
-          Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
-        } catch(IllegalStateException e) {
-          Log.e(LOG_TAG,e.getMessage());
-          Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT);
-        }
-
         mMediaPlayer.setOnPreparedListener(new MediaPlayerOnPreparedListener());
-
 
         getActivity().setTitle((CharSequence) mTrack.mTrackTitle + " from album " + mTrack.mTrackAlbum);
         super.onCreate(savedInstanceState);
@@ -79,6 +63,20 @@ public class SongPlayerActivityFragment extends Fragment{
         TextView albumTextView = (TextView) view.findViewById(R.id.song_title_text_view);
         albumTextView.setText(mTrack.mTrackAlbum);
 
+
+        try{
+          mMediaPlayer.setDataSource(mTrack.mPreviewUrl);
+          mMediaPlayer.prepareAsync();
+        } catch (IllegalArgumentException e) {
+          Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+          Log.e(LOG_TAG,e.getMessage());
+        } catch(IOException e) {
+          Log.e(LOG_TAG,e.getMessage());
+          Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+        } catch(IllegalStateException e) {
+          Log.e(LOG_TAG,e.getMessage());
+          Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT);
+        }
 
         return view;
     }

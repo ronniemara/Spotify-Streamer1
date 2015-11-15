@@ -42,6 +42,7 @@ public class DetailsActivityFragment extends Fragment {
     private int mProgressStatus = 0;
 
     static final String TRACK_DATA = "trackData";
+    String artistName = null;
 
 
     private final String LOG_TAG = DetailsActivityFragment.class.getSimpleName();
@@ -53,16 +54,22 @@ public class DetailsActivityFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         extras = getActivity().getIntent().getExtras();
         // Set title
-        if (extras.containsKey("Artist")) {
-            StringBuilder titleBuilder = new StringBuilder("Top 10 Tracks \n ");
-            titleBuilder.append(extras.get("Artist"));
-
-            getActivity().setTitle(titleBuilder.toString());
+        if(extras != null) {
+          if (extras.containsKey("Artist")) {
+              artistName = extras.get("Artist").toString();
+              getActivity().setTitle("Top 10 Tracks \n " + artistName);
+          }
+        } else {
+          if(savedInstanceState != null && savedInstanceState.containsKey(TRACK_DATA)
+           && savedInstanceState.containsKey("ARTIST_NAME") ) {
+              mTracksData = savedInstanceState.getParcelableArrayList(TRACK_DATA);
+              artistName = savedInstanceState.get("ARTIST_NAME").toString();
+          }
+          getActivity().setTitle("Top 10 Tracks \n " + artistName);
         }
 
-        if(savedInstanceState != null && savedInstanceState.containsKey(TRACK_DATA) ) {
-            mTracksData = savedInstanceState.getParcelableArrayList(TRACK_DATA);
-        }
+
+
 
 
         super.onCreate(savedInstanceState);
@@ -73,6 +80,7 @@ public class DetailsActivityFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         //save mTracksData list
         outState.putParcelableArrayList(TRACK_DATA, mTracksData);
+        outState.putCharSequence("ARTIST_NAME", new StringBuilder(artistName));
         super.onSaveInstanceState(outState);
     }
 
@@ -143,7 +151,7 @@ public class DetailsActivityFragment extends Fragment {
                 Log.e(LOG_TAG, "NullpointerException");
                 Toast.makeText(getActivity(), "NullpointerException", Toast.LENGTH_SHORT).show();
             }
-            
+
             List<Track> tracksList = topTracksData.tracks;
             if (tracksList.isEmpty()) {
                 return null;
