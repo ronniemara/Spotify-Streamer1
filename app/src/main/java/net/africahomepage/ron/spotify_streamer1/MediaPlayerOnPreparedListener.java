@@ -6,6 +6,6 @@ class MediaPlayerOnPreparedListener implements OnPreparedListener {
 
    @Override
   public void onPrepared(MediaPlayer mp) {
-
+    mp.start();
   }
 }

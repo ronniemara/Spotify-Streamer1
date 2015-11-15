@@ -13,6 +13,9 @@ import android.media.MediaPlayer;
 import android.net.Uri.Builder;
 import android.net.Uri;
 import android.widget.Toast;
+import android.media.AudioManager;
+import android.util.Log;
+
 import java.io.IOException;
 
 
@@ -38,24 +41,24 @@ public class SongPlayerActivityFragment extends Fragment{
 
         errorListener = new MediaPlayerOnErrorListener();
         mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
         mMediaPlayer.setOnErrorListener(errorListener);
 
         Uri uri = new Builder().appendPath(mTrack.mPreviewUrl).build();
         try{
           mMediaPlayer.setDataSource(getActivity(), uri );
+          mMediaPlayer.prepareAsync();
         } catch (IllegalArgumentException e) {
           Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
           Log.e(LOG_TAG,e.getMessage());
         } catch(IOException e) {
           Log.e(LOG_TAG,e.getMessage());
           Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
-        }
-        try{
-          mMediaPlayer.prepareAsync();
         } catch(IllegalStateException e) {
           Log.e(LOG_TAG,e.getMessage());
           Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT);
         }
+
         mMediaPlayer.setOnPreparedListener(new MediaPlayerOnPreparedListener());
 
 
