@@ -31,25 +31,29 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center">
-            <ImageView
+            <ImageButton
                 android:layout_width="50dip"
                 android:layout_height="50dip"
                 android:src="@android:drawable/ic_media_previous"
                 android:id="@+id/previous_button"
                 android:color="#000"
+                android:onClick="previous"
                 />
-            <ImageView
+            <ImageButton
                 android:layout_width="50dip"
                 android:layout_height="50dip"
                 android:src="@android:drawable/ic_media_pause"
                 android:id="@+id/play_button"
-                android:color="#000"/>
-            <ImageView
+                android:color="#000"
+                android:onClick="pause"
+                />
+            <ImageButton
                 android:layout_width="50dip"
                 android:layout_height="50dip"
                 android:src="@android:drawable/ic_media_next"
                 android:id="@+id/next_button"
                 android:color="#000"
+                android:onClick="next"
                 />
         </LinearLayout>
 

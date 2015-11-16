@@ -97,4 +97,18 @@ public class SongPlayerActivityFragment extends Fragment{
     }
 
 
+    public void previous() {
+
+    }
+
+
+    public void pause(View View) {
+        mMediaPlayer.pause();
+    }
+
+
+    public void next() {
+        mMediaPlayer.stop();
+        mMediaPlayer.release();
+    }
 }

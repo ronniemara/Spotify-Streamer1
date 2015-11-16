@@ -50,6 +50,8 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.TrackVie
 
         Picasso.with(holder.container.getContext())
                 .load(item.mTrackSmallImageUrl)
+                .fit()
+                .centerCrop()
                 .into(holder.imageView);
 
         holder.trackTitle.setText(item.mTrackTitle);
