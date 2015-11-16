@@ -52,6 +52,16 @@ public class DetailsActivityFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+      if(savedInstanceState == null || !savedInstanceState.containsKey(TRACK_DATA) || !savedInstanceState.containsKey("ARTIST_NAME")) {
+          mTracksData = new ArrayList<>();
+
+      }
+      else {
+          mTracksData = savedInstanceState.getParcelableArrayList("ArtistDAta");
+          artistName = savedInstanceState.get("ARTIST_NAME").toString();
+
+      }
         extras = getActivity().getIntent().getExtras();
         // Set title
         if(extras != null) {
@@ -59,22 +69,10 @@ public class DetailsActivityFragment extends Fragment {
               artistName = extras.get("Artist").toString();
               getActivity().setTitle("Top 10 Tracks \n " + artistName);
           }
-        } else {
-          if(savedInstanceState != null && savedInstanceState.containsKey(TRACK_DATA)
-           && savedInstanceState.containsKey("ARTIST_NAME") ) {
-              mTracksData = savedInstanceState.getParcelableArrayList(TRACK_DATA);
-              artistName = savedInstanceState.get("ARTIST_NAME").toString();
-          }
-          getActivity().setTitle("Top 10 Tracks \n " + artistName);
         }
-
-
-
-
-
-        super.onCreate(savedInstanceState);
-
-    }
+          getActivity().setTitle("Top 10 Tracks \n " + artistName);
+          super.onCreate(savedInstanceState);
+        }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
