@@ -3,7 +3,9 @@ package net.africahomepage.ron.spotify_streamer1;
 import android.app.Fragment;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NavUtils;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewOverlay;
@@ -46,7 +48,23 @@ public class SongPlayerActivityFragment extends Fragment{
         mMediaPlayer.setOnErrorListener(errorListener);
         mMediaPlayer.setOnPreparedListener(new MediaPlayerOnPreparedListener());
 
-        getActivity().setTitle((CharSequence) mTrack.mTrackTitle + " from album " + mTrack.mTrackAlbum);
+        try{
+            mMediaPlayer.setDataSource(mTrack.mPreviewUrl);
+            mMediaPlayer.prepareAsync();
+        } catch (IllegalArgumentException e) {
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e(LOG_TAG,e.getMessage());
+        } catch(IOException e) {
+            Log.e(LOG_TAG,e.getMessage());
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+        } catch(IllegalStateException e) {
+            Log.e(LOG_TAG,e.getMessage());
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT);
+        }
+
+        getActivity().setTitle(mTrack.mTrackTitle + " from album " + mTrack.mTrackAlbum);
+
+        setHasOptionsMenu(true);
         super.onCreate(savedInstanceState);
     }
 
@@ -63,22 +81,19 @@ public class SongPlayerActivityFragment extends Fragment{
         TextView albumTextView = (TextView) view.findViewById(R.id.song_title_text_view);
         albumTextView.setText(mTrack.mTrackAlbum);
 
-
-        try{
-          mMediaPlayer.setDataSource(mTrack.mPreviewUrl);
-          mMediaPlayer.prepareAsync();
-        } catch (IllegalArgumentException e) {
-          Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
-          Log.e(LOG_TAG,e.getMessage());
-        } catch(IOException e) {
-          Log.e(LOG_TAG,e.getMessage());
-          Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
-        } catch(IllegalStateException e) {
-          Log.e(LOG_TAG,e.getMessage());
-          Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT);
-        }
-
         return view;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            // Respond to the action bar's Up/Home button
+            case android.R.id.home:
+                mMediaPlayer.stop();
+                NavUtils.navigateUpFromSameTask(getActivity());
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
     }
 
 

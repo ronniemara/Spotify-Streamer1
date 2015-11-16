@@ -55,19 +55,19 @@ public class DetailsActivityFragment extends Fragment {
 
       if(savedInstanceState == null || !savedInstanceState.containsKey(TRACK_DATA) || !savedInstanceState.containsKey("ARTIST_NAME")) {
           mTracksData = new ArrayList<>();
-
       }
       else {
           mTracksData = savedInstanceState.getParcelableArrayList("ArtistDAta");
           artistName = savedInstanceState.get("ARTIST_NAME").toString();
-
       }
         extras = getActivity().getIntent().getExtras();
         // Set title
         if(extras != null) {
           if (extras.containsKey("Artist")) {
               artistName = extras.get("Artist").toString();
-              getActivity().setTitle("Top 10 Tracks \n " + artistName);
+              if(artistName !=null) {
+                  getActivity().setTitle("Top 10 Tracks \n " + artistName);
+              }
           }
         }
           getActivity().setTitle("Top 10 Tracks \n " + artistName);
@@ -137,18 +137,16 @@ public class DetailsActivityFragment extends Fragment {
             Tracks topTracksData =  null;
 
             try {
-
                     topTracksData = spotify.getArtistTopTrack(mSpotifyId, query);
-
-
-            } catch(RetrofitError error) {
-                Log.e(LOG_TAG, error.getMessage().toString());
+           } catch(RetrofitError error) {
+                Log.e(LOG_TAG, error.getMessage());
                 Toast.makeText(getActivity(), "API error. Could not complete request", Toast.LENGTH_SHORT).show();
             }
             catch (NullPointerException e) {
                 Log.e(LOG_TAG, "NullpointerException");
                 Toast.makeText(getActivity(), "NullpointerException", Toast.LENGTH_SHORT).show();
             }
+
 
             List<Track> tracksList = topTracksData.tracks;
             if (tracksList.isEmpty()) {
@@ -163,8 +161,6 @@ public class DetailsActivityFragment extends Fragment {
 
                 mTracksData.add(new TrackObject(track.album.name, track.name, albumSmallImage, albumLargeImage, track.preview_url));
             }
-
-
             return null;
 
         }
