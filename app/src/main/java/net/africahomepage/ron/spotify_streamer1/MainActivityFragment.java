@@ -20,6 +20,11 @@ import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.mobileconnectors.cognito.CognitoSyncManager;
+import com.amazonaws.mobileconnectors.cognito.Dataset;
+import com.amazonaws.mobileconnectors.cognito.DefaultSyncCallback;
+import com.amazonaws.regions.Regions;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -61,9 +66,34 @@ public class MainActivityFragment extends Fragment {
             mArtistData = savedInstanceState.getParcelableArrayList("ArtistDAta");
 
         }
+
+        // Initialize the Amazon Cognito credentials provider
+        CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
+                getActivity().getApplicationContext(),
+                "us-east-1:6d54f99d-7587-40d5-8a15-1fb02a6fafaa", // Identity Pool ID
+                Regions.US_EAST_1 // Region
+        );
+
+        // Initialize the Cognito Sync client
+        CognitoSyncManager syncClient = new CognitoSyncManager(
+                getActivity().getApplicationContext(),
+                Regions.US_EAST_1, // Region
+                credentialsProvider);
+
+// Create a record in a dataset and synchronize with the server
+        Dataset dataset = syncClient.openOrCreateDataset("myDataset");
+        dataset.put("myKey", "myValue");
+        dataset.synchronize(new DefaultSyncCallback() {
+            @Override
+            public void onSuccess(Dataset dataset, List newRecords) {
+                //Your handler code here
+            }
+        });
+
+
         super.onCreate(savedInstanceState);
 
-        // Get the intent, verify the action and get the query
+
 
     }
 
@@ -206,8 +236,11 @@ public class MainActivityFragment extends Fragment {
             final ArtistObject artist = mValues.get(i);
             viewHolder.mArtistNAme.setText(artist.mName);
 
-            Picasso.with(viewHolder.mImageview.getContext())
+                    Picasso
+                    .with(viewHolder.mImageview.getContext())
                     .load(artist.mImageUrl)
+                    .fit()
+                    .centerCrop()
                     .into(viewHolder.mImageview);
 
 

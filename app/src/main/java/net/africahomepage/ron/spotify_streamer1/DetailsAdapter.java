@@ -13,7 +13,6 @@ import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
-import static android.support.v4.app.ActivityCompat.startActivity;
 
 /**
  * Created by ron on 07/07/15.
@@ -28,13 +27,8 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.TrackVie
 
     @Override
     public TrackViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
         View rootView = LayoutInflater.from(parent.getContext()).inflate(R.layout.details_recycler_view_layout, parent, false);
-
         TrackViewHolder viewHolder = new TrackViewHolder(rootView);
-
-
-
         return  viewHolder;
     }
 
@@ -44,7 +38,7 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.TrackVie
     }
 
     @Override
-    public void onBindViewHolder(TrackViewHolder holder, int position) {
+    public void onBindViewHolder(TrackViewHolder holder, final int position) {
 
         final TrackObject item = mDataSet.get(position);
 
@@ -62,10 +56,10 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.TrackVie
             @Override
             public void onClick(View v) {
 
-
                 Context context = v.getContext();
                 Intent intent = new Intent(context, SongPlayerActivity.class);
-                intent.putExtra("net.africahomepage.ron.Track", item);
+                intent.putParcelableArrayListExtra("net.africahomepage.ron.Tracks", mDataSet);
+                intent.putExtra("index", position);
                 context.startActivity(intent);
 
             }
