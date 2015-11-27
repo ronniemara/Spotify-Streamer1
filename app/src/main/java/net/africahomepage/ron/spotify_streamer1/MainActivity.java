@@ -1,16 +1,25 @@
 package net.africahomepage.ron.spotify_streamer1;
 
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Point;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements MainFragment.OnUpdateUIListener{
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        final Display display = getWindowManager().getDefaultDisplay();
+        Point size = getDisplaySize(display);
+
+
     }
 
 
@@ -34,5 +43,34 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private static Point getDisplaySize(final Display display) {
+        final Point point = new Point();
+        try {
+            display.getSize(point);
+        } catch (java.lang.NoSuchMethodError ignore) { // Older device
+            point.x = display.getWidth();
+            point.y = display.getHeight();
+        }
+        return point;
+    }
+
+    @Override
+    public void updateUI(ArtistObject artist) {
+        DetailsFragment fragment = (DetailsFragment) getSupportFragmentManager().
+                findFragmentById(R.id.tracks_views);
+        if (fragment==null || ! fragment.isInLayout()) {
+            // start new Activity
+            Intent intent = new Intent(this, DetailsActivity.class);
+            intent.putExtra(Intent.EXTRA_TEXT, artist.mSpotifyId).putExtra("Artist", artist.mName);
+            this.startActivity(intent);
+        }
+        else {
+            fragment.update();
+        }
+
+
+
     }
 }

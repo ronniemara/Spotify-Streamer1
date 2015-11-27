@@ -1,5 +1,7 @@
 package net.africahomepage.ron.spotify_streamer1;
 
+import android.app.Activity;
+import android.support.v4.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
 import android.net.ConnectivityManager;
@@ -9,6 +11,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -39,16 +42,16 @@ import kaaes.spotify.webapi.android.models.Image;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class MainActivityFragment extends Fragment {
+public class MainFragment extends Fragment {
 
-    private RecyclerView mRecyclerView;
-    private RecyclerView.Adapter mAdapter;
-    private RecyclerView.LayoutManager mLayoutManager;
+
+    public OnUpdateUIListener mCallback = null;
 
     ArtistAdapter mSpotifyadapter = null;
     ArrayList<ArtistObject> mArtistData = new ArrayList<>();
 
-    public MainActivityFragment() {
+    public MainFragment() {
+
     }
 
     @Override
@@ -59,10 +62,9 @@ public class MainActivityFragment extends Fragment {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        if(savedInstanceState == null || !savedInstanceState.containsKey("ArtistDAta")) {
+        if (savedInstanceState == null || !savedInstanceState.containsKey("ArtistDAta")) {
             mArtistData = new ArrayList<>();
-        }
-        else {
+        } else {
             mArtistData = savedInstanceState.getParcelableArrayList("ArtistDAta");
 
         }
@@ -94,8 +96,22 @@ public class MainActivityFragment extends Fragment {
         super.onCreate(savedInstanceState);
 
 
-
     }
+
+    @Override
+    public void onAttach(Activity activity) {
+        super.onAttach(activity);
+
+        // This makes sure that the container activity has implemented
+        // the callback interface. If not, it throws an exception
+        try {
+            mCallback = (OnUpdateUIListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(activity.toString()
+                    + " must implement OnHeadlineSelectedListener");
+        }
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -152,15 +168,15 @@ public class MainActivityFragment extends Fragment {
         return root;
     }
 
-        public class FetchMusicTask extends AsyncTask<String, Void, Void> {
+    public class FetchMusicTask extends AsyncTask<String, Void, Void> {
 
-            private final String LOG_TAG =  FetchMusicTask.class.getSimpleName();
-            public OnTaskCompletedListiner listener = null;
+        private final String LOG_TAG = FetchMusicTask.class.getSimpleName();
+        public OnTaskCompletedListiner listener = null;
 
 
-            public FetchMusicTask(OnTaskCompletedListiner listener) {
-                this.listener = listener;
-            }
+        public FetchMusicTask(OnTaskCompletedListiner listener) {
+            this.listener = listener;
+        }
 
         protected void onPostExecute(Void result) {
 
@@ -186,10 +202,10 @@ public class MainActivityFragment extends Fragment {
                 Artist art = artistInfo.get(i);
                 List<Image> images = art.images;
                 mArtistData.add(new ArtistObject(
-                                    art.name,
-                                    art.id,
-                                    images.isEmpty() ? null : images.get(0).url
-                                ));
+                        art.name,
+                        art.id,
+                        images.isEmpty() ? null : images.get(0).url
+                ));
             }
 
             return null;
@@ -197,18 +213,22 @@ public class MainActivityFragment extends Fragment {
     }
 
 
-
     public interface OnTaskCompletedListiner {
-         void taskCompleted();
+        void taskCompleted();
     }
 
-    public static class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ViewHolder> {
+    public interface OnUpdateUIListener {
+        void updateUI(ArtistObject artist);
+    }
+
+    public class ArtistAdapter extends RecyclerView.Adapter<ArtistAdapter.ViewHolder> {
 
         private final TypedValue mTypedValue = new TypedValue();
         private List<ArtistObject> mValues;
         private int mBackground;
+        public String LOG_TAG = ArtistAdapter.class.getSimpleName();
 
-        public static class ViewHolder extends RecyclerView.ViewHolder {
+        public class ViewHolder extends RecyclerView.ViewHolder {
             public final View mView;
             public final TextView mArtistNAme;
             public final ImageView mImageview;
@@ -236,7 +256,7 @@ public class MainActivityFragment extends Fragment {
             final ArtistObject artist = mValues.get(i);
             viewHolder.mArtistNAme.setText(artist.mName);
 
-                    Picasso
+            Picasso
                     .with(viewHolder.mImageview.getContext())
                     .load(artist.mImageUrl)
                     .fit()
@@ -245,12 +265,10 @@ public class MainActivityFragment extends Fragment {
 
 
             viewHolder.mView.setOnClickListener(new View.OnClickListener() {
+
                 @Override
                 public void onClick(View v) {
-                    Context context = v.getContext();
-                    Intent intent = new Intent(context, DetailsActivity.class);
-                    intent.putExtra(Intent.EXTRA_TEXT, artist.mSpotifyId).putExtra("Artist", artist.mName);
-                    context.startActivity(intent);
+                    mCallback.updateUI(artist);
                 }
             });
         }
@@ -269,7 +287,7 @@ public class MainActivityFragment extends Fragment {
     }
 
 
-    }
+}
 
 
 

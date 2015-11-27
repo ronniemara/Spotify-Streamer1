@@ -3,7 +3,6 @@ package net.africahomepage.ron.spotify_streamer1;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -11,12 +10,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,7 +27,7 @@ import retrofit.RetrofitError;
 /**
  * A placeholder fragment containing a simple view.
  */
-public class DetailsActivityFragment extends Fragment {
+public class DetailsFragment extends Fragment {
 
     ArrayList<TrackObject> mTracksData = new ArrayList<>();
     String mSpotifyId = null;
@@ -45,40 +42,49 @@ public class DetailsActivityFragment extends Fragment {
     String artistName = null;
 
 
-    private final String LOG_TAG = DetailsActivityFragment.class.getSimpleName();
+    private final String LOG_TAG = DetailsFragment.class.getSimpleName();
 
-    public DetailsActivityFragment() {
+    public DetailsFragment() {
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
-      if(savedInstanceState == null || !savedInstanceState.containsKey(TRACK_DATA) || !savedInstanceState.containsKey("ARTIST_NAME")) {
-          mTracksData = new ArrayList<>();
-      }
-      else {
-          mTracksData = savedInstanceState.getParcelableArrayList("ArtistDAta");
-          artistName = savedInstanceState.get("ARTIST_NAME").toString();
-      }
+        //there is no saved state or there is no track data or there is no artist name
+        if (savedInstanceState == null || !savedInstanceState.containsKey(TRACK_DATA) ||
+                !savedInstanceState.containsKey("ARTIST_NAME")) {
+            mTracksData = new ArrayList<>();
+        } else {
+            mTracksData = savedInstanceState.getParcelableArrayList("ArtistDAta");
+            artistName = savedInstanceState.get("ARTIST_NAME").toString();
+        }
         extras = getActivity().getIntent().getExtras();
         // Set title
-        if(extras != null) {
-          if (extras.containsKey("Artist")) {
-              artistName = extras.get("Artist").toString();
-              if(artistName !=null) {
-                  getActivity().setTitle("Top 10 Tracks \n " + artistName);
-              }
-          }
+        if (extras != null) {
+            mSpotifyId = extras.getString(Intent.EXTRA_TEXT);
+
+            if (extras.containsKey("Artist")) {
+                artistName = extras.get("Artist").toString();
+                if (artistName != null) {
+                    getActivity().setTitle("Top 10 Tracks \n " + artistName);
+                }
+            } else {
+            //we got to this fragment via a large layout "two-pane" activity
+                return;
+            }
+
         }
-          getActivity().setTitle("Top 10 Tracks \n " + artistName);
-          super.onCreate(savedInstanceState);
-        }
+        getActivity().setTitle("Top 10 Tracks \n " + artistName);
+        super.onCreate(savedInstanceState);
+    }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
         //save mTracksData list
         outState.putParcelableArrayList(TRACK_DATA, mTracksData);
-        outState.putCharSequence("ARTIST_NAME", new StringBuilder(artistName));
+        if(artistName != null) {
+            outState.putCharSequence("ARTIST_NAME", new StringBuilder(artistName));
+        }
         super.onSaveInstanceState(outState);
     }
 
@@ -88,21 +94,22 @@ public class DetailsActivityFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_details, container, false);
         mProgress  = (ProgressBar) rootView.findViewById(R.id.progress_bar_id);
 
-
-        if (extras != null) {
-            mSpotifyId = extras.getString(Intent.EXTRA_TEXT);
-        }
-
-        if(mTracksData.isEmpty()) {
-            startFetchTrackTASk();
-        }
-
-
         RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.details_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
         adapter = new DetailsAdapter(mTracksData);
         recyclerView.setAdapter(adapter);
+
+        /*
+        Check if there is a list of tracks and if this fragment is opened by "two-pane" tablet view.I
+        If fragment is a part of "two-pane" activity return View without trying to fetch data
+         */
+        if(mTracksData.isEmpty() && mSpotifyId !=null) {
+            startFetchTrackTASk();
+        } else {
+
+            return rootView;
+        }
 
         return rootView;
     }
@@ -110,9 +117,6 @@ public class DetailsActivityFragment extends Fragment {
     private void startFetchTrackTASk() {
         FetchTrackTAsk fetchTrackTAsk = new FetchTrackTAsk();
         fetchTrackTAsk.execute();
-
-
-
     }
 
     public class FetchTrackTAsk extends AsyncTask<Void, Void, Void> {
@@ -180,5 +184,8 @@ public class DetailsActivityFragment extends Fragment {
         }
     }
 
+    public void update() {
+        adapter.notifyDataSetChanged();
+    }
 
 }
