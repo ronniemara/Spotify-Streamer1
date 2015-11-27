@@ -104,7 +104,7 @@ public class DetailsFragment extends Fragment {
         Check if there is a list of tracks and if this fragment is opened by "two-pane" tablet view.I
         If fragment is a part of "two-pane" activity return View without trying to fetch data
          */
-        if(mTracksData.isEmpty() && mSpotifyId !=null) {
+        if(mTracksData.isEmpty() && mSpotifyId != null) {
             startFetchTrackTASk();
         } else {
 
@@ -184,7 +184,9 @@ public class DetailsFragment extends Fragment {
         }
     }
 
-    public void update() {
+    public void update(ArtistObject artist) {
+        mSpotifyId = artist.mSpotifyId;
+        startFetchTrackTASk();
         adapter.notifyDataSetChanged();
     }
 

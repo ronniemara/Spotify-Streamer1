@@ -67,7 +67,7 @@ public class MainActivity extends AppCompatActivity implements MainFragment.OnUp
             this.startActivity(intent);
         }
         else {
-            fragment.update();
+            fragment.update(artist);
         }
 
 
