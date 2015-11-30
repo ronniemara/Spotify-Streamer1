@@ -68,13 +68,11 @@ public class DetailsFragment extends Fragment {
                 if (artistName != null) {
                     getActivity().setTitle("Top 10 Tracks \n " + artistName);
                 }
-            } else {
-            //we got to this fragment via a large layout "two-pane" activity
-                return;
+            }  else {
+                getActivity().setTitle("Search for artist");
             }
 
         }
-        getActivity().setTitle("Top 10 Tracks \n " + artistName);
         super.onCreate(savedInstanceState);
     }
 
@@ -82,7 +80,7 @@ public class DetailsFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         //save mTracksData list
         outState.putParcelableArrayList(TRACK_DATA, mTracksData);
-        if(artistName != null) {
+        if (artistName != null) {
             outState.putCharSequence("ARTIST_NAME", new StringBuilder(artistName));
         }
         super.onSaveInstanceState(outState);
@@ -92,7 +90,7 @@ public class DetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootView = inflater.inflate(R.layout.fragment_details, container, false);
-        mProgress  = (ProgressBar) rootView.findViewById(R.id.progress_bar_id);
+        mProgress = (ProgressBar) rootView.findViewById(R.id.progress_bar_id);
 
         RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.details_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
@@ -101,13 +99,12 @@ public class DetailsFragment extends Fragment {
         recyclerView.setAdapter(adapter);
 
         /*
-        Check if there is a list of tracks and if this fragment is opened by "two-pane" tablet view.I
+        Check if there is a list of tracks and if this fragment is opened by "two-pane" tablet view.
         If fragment is a part of "two-pane" activity return View without trying to fetch data
          */
-        if(mTracksData.isEmpty() && mSpotifyId != null) {
+        if (mTracksData.isEmpty() && mSpotifyId != null) {
             startFetchTrackTASk();
         } else {
-
             return rootView;
         }
 
@@ -138,15 +135,14 @@ public class DetailsFragment extends Fragment {
             Map query = new HashMap();
             query.put("country", "CA");
 
-            Tracks topTracksData =  null;
+            Tracks topTracksData = null;
 
             try {
-                    topTracksData = spotify.getArtistTopTrack(mSpotifyId, query);
-           } catch(RetrofitError error) {
+                topTracksData = spotify.getArtistTopTrack(mSpotifyId, query);
+            } catch (RetrofitError error) {
                 Log.e(LOG_TAG, error.getMessage());
                 Toast.makeText(getActivity(), "API error. Could not complete request", Toast.LENGTH_SHORT).show();
-            }
-            catch (NullPointerException e) {
+            } catch (NullPointerException e) {
                 Log.e(LOG_TAG, "NullpointerException");
                 Toast.makeText(getActivity(), "NullpointerException", Toast.LENGTH_SHORT).show();
             }

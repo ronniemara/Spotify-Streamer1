@@ -3,9 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:orientation="horizontal" android:layout_width="match_parent"
     android:layout_height="match_parent">
-
     <fragment
         android:layout_width="400dp"
+        android:layout_marginRight="20dp"
         android:layout_height="match_parent"
         android:id="@+id/artists_views"
         android:name="net.africahomepage.ron.spotify_streamer1.MainFragment"
@@ -15,9 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:id="@+id/tracks_views"
+        android:layout_marginTop="35dp"
         android:name="net.africahomepage.ron.spotify_streamer1.DetailsFragment"
         tools:layout="@layout/fragment_main" />
-
-
-
 </LinearLayout>
