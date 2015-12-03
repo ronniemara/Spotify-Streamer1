@@ -1,36 +1,37 @@
-<?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent">
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:id="@+id/song_player_dialog_fragment"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center">
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/song_artist_text_view"/>
+    <TextView 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/song_album_text_view"/>
+    <SeekBar 
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/song_seek_bar"/>
 
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/song_player_image_view"/>
-
-    <LinearLayout
+        android:layout_height="wrap_content"
+        android:id="@+id/song_player_image_view"
+        android:contentDescription="@string/ArtistImage" />
+    <TextView 
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_gravity="bottom"
+        android:id="@+id/song_title_text_view"/>
+
+    <LinearLayout 
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:gravity="center">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical">
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/song_title_text_view"/>
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/song_album_text_view"/>
-        </LinearLayout>
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center">
             <ImageButton
                 android:layout_width="50dip"
                 android:layout_height="50dip"
@@ -52,10 +53,6 @@
                 android:src="@android:drawable/ic_media_next"
                 android:id="@+id/next_button"
                 android:color="#000"
-                />
-        </LinearLayout>
-
+                android:contentDescription="next button" />
     </LinearLayout>
-
-
-</FrameLayout>
+</LinearLayout>

@@ -39,7 +39,7 @@ public class DetailsFragment extends Fragment {
     private int mProgressStatus = 0;
 
     static final String TRACK_DATA = "trackData";
-    String artistName = null;
+    String mArtistName = null;
 
 
     private final String LOG_TAG = DetailsFragment.class.getSimpleName();
@@ -56,7 +56,7 @@ public class DetailsFragment extends Fragment {
             mTracksData = new ArrayList<>();
         } else {
             mTracksData = savedInstanceState.getParcelableArrayList("ArtistDAta");
-            artistName = savedInstanceState.get("ARTIST_NAME").toString();
+            mArtistName = savedInstanceState.get("ARTIST_NAME").toString();
         }
         extras = getActivity().getIntent().getExtras();
         // Set title
@@ -64,9 +64,9 @@ public class DetailsFragment extends Fragment {
             mSpotifyId = extras.getString(Intent.EXTRA_TEXT);
 
             if (extras.containsKey("Artist")) {
-                artistName = extras.get("Artist").toString();
-                if (artistName != null) {
-                    getActivity().setTitle("Top 10 Tracks \n " + artistName);
+                mArtistName = extras.get("Artist").toString();
+                if (mArtistName != null) {
+                    getActivity().setTitle("Top 10 Tracks \n " + mArtistName);
                 }
             }  else {
                 getActivity().setTitle("Search for artist");
@@ -80,8 +80,8 @@ public class DetailsFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         //save mTracksData list
         outState.putParcelableArrayList(TRACK_DATA, mTracksData);
-        if (artistName != null) {
-            outState.putCharSequence("ARTIST_NAME", new StringBuilder(artistName));
+        if (mArtistName != null) {
+            outState.putCharSequence("ARTIST_NAME", new StringBuilder(mArtistName));
         }
         super.onSaveInstanceState(outState);
     }
@@ -95,7 +95,7 @@ public class DetailsFragment extends Fragment {
         RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.details_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        adapter = new DetailsAdapter(mTracksData);
+        adapter = new DetailsAdapter(mArtistName, mTracksData);
         recyclerView.setAdapter(adapter);
 
         /*

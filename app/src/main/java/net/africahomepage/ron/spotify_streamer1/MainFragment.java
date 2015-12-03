@@ -33,6 +33,7 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.List;
 
+import butterknife.Bind;
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
 import kaaes.spotify.webapi.android.models.Artist;
@@ -50,9 +51,6 @@ public class MainFragment extends Fragment {
     ArtistAdapter mSpotifyadapter = null;
     ArrayList<ArtistObject> mArtistData = new ArrayList<>();
 
-    public MainFragment() {
-
-    }
 
     @Override
     public void onSaveInstanceState(Bundle outState) {
@@ -74,7 +72,7 @@ public class MainFragment extends Fragment {
                 getActivity().getApplicationContext(),
                 "us-east-1:6d54f99d-7587-40d5-8a15-1fb02a6fafaa", // Identity Pool ID
                 Regions.US_EAST_1 // Region
-        );
+                );
 
         // Initialize the Cognito Sync client
         CognitoSyncManager syncClient = new CognitoSyncManager(
@@ -82,7 +80,7 @@ public class MainFragment extends Fragment {
                 Regions.US_EAST_1, // Region
                 credentialsProvider);
 
-// Create a record in a dataset and synchronize with the server
+        // Create a record in a dataset and synchronize with the server
         Dataset dataset = syncClient.openOrCreateDataset("myDataset");
         dataset.put("myKey", "myValue");
         dataset.synchronize(new DefaultSyncCallback() {
@@ -115,13 +113,10 @@ public class MainFragment extends Fragment {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
+            Bundle savedInstanceState) {
 
         View root = inflater.inflate(R.layout.fragment_main, container, false);
-
-
         final SearchView searchEditText = (SearchView) root.findViewById(R.id.search_editText);
-
         searchEditText.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -130,26 +125,26 @@ public class MainFragment extends Fragment {
                     @Override
                     public void taskCompleted() {
                         if (mArtistData.isEmpty()) {
-                            Toast.makeText(getActivity(), "No artist found. Please refine your search", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(getActivity(),
+                                    "No artist found. Please refine your search",
+                                    Toast.LENGTH_SHORT).show();
                         }
                     }
                 };
 
-                ConnectivityManager cm =
-                        (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-
-                NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-                boolean isConnected = activeNetwork != null &&
-                        activeNetwork.isConnectedOrConnecting();
+                boolean isConnected = Util.isConnected(getActivity());
 
                 if (isConnected) {
                     FetchMusicTask fetchMusicTask = new FetchMusicTask(listiner);
                     fetchMusicTask.execute(query);
-
                 } else {
-                    Toast.makeText(getActivity(), "There is no internet connection. Please try again when you have access to the internet.", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(),
+                            "There is no internet connection."
+                            + "Please try again when you have access to the internet."
+                            , Toast.LENGTH_SHORT).show();
                 }
                 return true;
+
             }
 
             @Override
@@ -157,6 +152,7 @@ public class MainFragment extends Fragment {
                 return false;
             }
         });
+
         mSpotifyadapter = new ArtistAdapter(getActivity(), mArtistData);
 
 
@@ -202,10 +198,10 @@ public class MainFragment extends Fragment {
                 Artist art = artistInfo.get(i);
                 List<Image> images = art.images;
                 mArtistData.add(new ArtistObject(
-                        art.name,
-                        art.id,
-                        images.isEmpty() ? null : images.get(0).url
-                ));
+                            art.name,
+                            art.id,
+                            images.isEmpty() ? null : images.get(0).url
+                            ));
             }
 
             return null;
@@ -245,7 +241,7 @@ public class MainFragment extends Fragment {
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup viewGroup, int i) {
             View view = LayoutInflater.from(viewGroup.getContext())
-                    .inflate(R.layout.main_listview_textview, viewGroup, false);
+                .inflate(R.layout.main_listview_textview, viewGroup, false);
 
             return new ViewHolder(view);
         }
@@ -257,11 +253,11 @@ public class MainFragment extends Fragment {
             viewHolder.mArtistNAme.setText(artist.mName);
 
             Picasso
-                    .with(viewHolder.mImageview.getContext())
-                    .load(artist.mImageUrl)
-                    .fit()
-                    .centerCrop()
-                    .into(viewHolder.mImageview);
+                .with(viewHolder.mImageview.getContext())
+                .load(artist.mImageUrl)
+                .fit()
+                .centerCrop()
+                .into(viewHolder.mImageview);
 
 
             viewHolder.mView.setOnClickListener(new View.OnClickListener() {

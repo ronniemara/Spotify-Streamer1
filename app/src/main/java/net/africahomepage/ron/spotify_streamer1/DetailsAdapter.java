@@ -20,8 +20,10 @@ import java.util.ArrayList;
 public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.TrackViewHolder>{
 
     ArrayList<TrackObject> mDataSet;
+    String mArtist;
 
-    public DetailsAdapter(ArrayList<TrackObject> item) {
+    public DetailsAdapter(String artist, ArrayList<TrackObject> item) {
+        mArtist = artist; 
         mDataSet = item;
     }
 
@@ -59,7 +61,8 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.TrackVie
                 Context context = v.getContext();
                 Intent intent = new Intent(context, SongPlayerActivity.class);
                 intent.putParcelableArrayListExtra("net.africahomepage.ron.Tracks", mDataSet);
-                intent.putExtra("index", position);
+                intent.putExtra("net.africahomepage.ron.index", position);
+                intent.putExtra("net.africahomepage.ron.artist", mArtist);
                 context.startActivity(intent);
 
             }
