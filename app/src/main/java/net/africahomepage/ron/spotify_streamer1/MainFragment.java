@@ -1,6 +1,7 @@
 package net.africahomepage.ron.spotify_streamer1;
 
 import android.app.Activity;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.app.FragmentManager;
 import android.content.Context;
 import android.content.Intent;
@@ -9,6 +10,7 @@ import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
@@ -46,10 +48,11 @@ import kaaes.spotify.webapi.android.models.Image;
 public class MainFragment extends Fragment {
 
 
-    public OnUpdateUIListener mCallback = null;
+    public OnArtistClickListener mOnArtistClickListener  = null;
 
     ArtistAdapter mSpotifyadapter = null;
     ArrayList<ArtistObject> mArtistData = new ArrayList<>();
+    static final String ARTIST_DATA = "artistData";
 
 
     @Override
@@ -58,42 +61,17 @@ public class MainFragment extends Fragment {
         super.onSaveInstanceState(outState);
     }
 
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
         if (savedInstanceState == null || !savedInstanceState.containsKey("ArtistDAta")) {
             mArtistData = new ArrayList<>();
         } else {
             mArtistData = savedInstanceState.getParcelableArrayList("ArtistDAta");
-
         }
 
-        // Initialize the Amazon Cognito credentials provider
-        CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
-                getActivity().getApplicationContext(),
-                "us-east-1:6d54f99d-7587-40d5-8a15-1fb02a6fafaa", // Identity Pool ID
-                Regions.US_EAST_1 // Region
-                );
-
-        // Initialize the Cognito Sync client
-        CognitoSyncManager syncClient = new CognitoSyncManager(
-                getActivity().getApplicationContext(),
-                Regions.US_EAST_1, // Region
-                credentialsProvider);
-
-        // Create a record in a dataset and synchronize with the server
-        Dataset dataset = syncClient.openOrCreateDataset("myDataset");
-        dataset.put("myKey", "myValue");
-        dataset.synchronize(new DefaultSyncCallback() {
-            @Override
-            public void onSuccess(Dataset dataset, List newRecords) {
-                //Your handler code here
-            }
-        });
-
-
         super.onCreate(savedInstanceState);
-
-
     }
 
     @Override
@@ -103,7 +81,7 @@ public class MainFragment extends Fragment {
         // This makes sure that the container activity has implemented
         // the callback interface. If not, it throws an exception
         try {
-            mCallback = (OnUpdateUIListener) activity;
+            mOnArtistClickListener = (OnArtistClickListener) activity;
         } catch (ClassCastException e) {
             throw new ClassCastException(activity.toString()
                     + " must implement OnHeadlineSelectedListener");
@@ -155,11 +133,9 @@ public class MainFragment extends Fragment {
 
         mSpotifyadapter = new ArtistAdapter(getActivity(), mArtistData);
 
-
         RecyclerView recycView = (RecyclerView) root.findViewById(R.id.my_recycler_view);
         recycView.setLayoutManager(new LinearLayoutManager(getActivity()));
         recycView.setAdapter(mSpotifyadapter);
-
 
         return root;
     }
@@ -168,7 +144,6 @@ public class MainFragment extends Fragment {
 
         private final String LOG_TAG = FetchMusicTask.class.getSimpleName();
         public OnTaskCompletedListiner listener = null;
-
 
         public FetchMusicTask(OnTaskCompletedListiner listener) {
             this.listener = listener;
@@ -213,7 +188,7 @@ public class MainFragment extends Fragment {
         void taskCompleted();
     }
 
-    public interface OnUpdateUIListener {
+    public interface OnArtistClickListener {
         void updateUI(ArtistObject artist);
     }
 
@@ -231,6 +206,8 @@ public class MainFragment extends Fragment {
 
             public ViewHolder(View view) {
                 super(view);
+                view.setClickable(true);
+
                 mView = view;
                 mArtistNAme = (TextView) view.findViewById(R.id.artist_name_textview);
                 mImageview = (ImageView) view.findViewById(R.id.artist_imageview);
@@ -249,6 +226,8 @@ public class MainFragment extends Fragment {
         @Override
         public void onBindViewHolder(ViewHolder viewHolder, int i) {
 
+            viewHolder.itemView.setSelected(true);
+
             final ArtistObject artist = mValues.get(i);
             viewHolder.mArtistNAme.setText(artist.mName);
 
@@ -264,7 +243,7 @@ public class MainFragment extends Fragment {
 
                 @Override
                 public void onClick(View v) {
-                    mCallback.updateUI(artist);
+                    mOnArtistClickListener.updateUI(artist);
                 }
             });
         }
@@ -280,6 +259,10 @@ public class MainFragment extends Fragment {
             mValues = artistObjects;
         }
 
+    }
+
+    public void setOnArtistClickListener(AppCompatActivity activity) {
+        mOnArtistClickListener = (OnArtistClickListener) activity;
     }
 
 

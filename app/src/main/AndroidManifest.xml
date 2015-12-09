@@ -34,7 +34,7 @@
                 android:value="net.africahomepage.ron.spotify_streamer1.MainActivity" />
         </activity>
         <activity
-            android:name=".SongPlayerActivity"
+            android:name=".PlayerActivity"
             android:parentActivityName=".DetailsActivity"
             >
             <meta-data

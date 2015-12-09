@@ -2,37 +2,33 @@ package net.africahomepage.ron.spotify_streamer1;
 
 import android.app.Activity;
 import android.app.Dialog;
+import android.media.AudioManager;
 import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.v4.app.NavUtils;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ToggleButton;
 
-import com.squareup.picasso.Picasso;
-
+import java.io.IOException;
 import java.util.ArrayList;
 
 import butterknife.Bind;
-import butterknife.ButterKnife;
-import butterknife.OnCheckedChanged;
-import butterknife.OnClick;
 
 /**
  * Created by ron on 01/12/15.
  */
-public class SongPlayerCtrlDialog extends DialogFragment {
+public class PlayerFragDialog extends DialogFragment {
 
     private static int mIndex;
     private static MediaPlayer mMediaPlayer;
@@ -41,7 +37,8 @@ public class SongPlayerCtrlDialog extends DialogFragment {
     private onControlMediaPlayer dialogListener;
     String mArtist;
     private int mProgress;
-
+    PlayerOnErrorListener errorListener = null;
+    String LOG_TAG = PlayerFragDialog.class.getSimpleName();
 
     @Bind(R.id.previous_button)        ImageButton prev;
     @Bind(R.id.play_button)            ToggleButton play;
@@ -52,21 +49,56 @@ public class SongPlayerCtrlDialog extends DialogFragment {
     @Bind(R.id.song_seek_bar)           SeekBar seekBar;
     @Bind(R.id.song_title_text_view)    TextView songTitle;
 
-
-   
-
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         Bundle extras = getActivity().getIntent().getExtras();
-        mTracks = extras.getParcelableArrayList("net.africahomepage.ron.Tracks");
-        mIndex = extras.getInt("net.africahomepage.ron.index");
-        mTrack = mTracks.get(mIndex);
-        mArtist = extras.getString("net.africahomepage.ron.artist");
+
+        if(extras != null) {
+            if (extras.containsKey("net.africahomepage.ron.Tracks")) {
+                mTracks = extras.getParcelableArrayList("net.africahomepage.ron.Tracks");
+            }
+
+            if (extras.containsKey("net.africahomepage.ron.index") && !mTracks.isEmpty()) {
+                mIndex = extras.getInt("index");
+                mTrack = mTracks.get(mIndex);
+            }
+
+            if (extras.containsKey("net.africahomepage.ron.artist")) {
+                mArtist = extras.getString("net.africahomepage.ron.artist");
+            }
+
+        }  else {
+            mTracks = getArguments().getParcelableArrayList("net.africahomepage.ron.Tracks");
+            mIndex = getArguments().getInt("net.africahomepage.ron.index");
+            mTrack = mTracks.get(mIndex);
+
+            mArtist = getArguments().getString("net.africahomepage.ron.artist");
+        }
+
         mProgress = 0;
 
+        //set up MediaPlayer
+        errorListener = new PlayerOnErrorListener();
+        mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mMediaPlayer.setOnErrorListener(errorListener);
+        mMediaPlayer.setOnPreparedListener(new PlayerOnPreparedListener());
+
+        try{
+            mMediaPlayer.setDataSource(mTrack.mPreviewUrl);
+            mMediaPlayer.prepareAsync();
+        } catch (IllegalArgumentException e) {
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e(LOG_TAG, e.getMessage());
+        } catch(IOException e) {
+            Log.e(LOG_TAG,e.getMessage());
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+        } catch(IllegalStateException e) {
+            Log.e(LOG_TAG,e.getMessage());
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT);
+        }
     }
 
     @Override
@@ -75,9 +107,9 @@ public class SongPlayerCtrlDialog extends DialogFragment {
         // Get the layout inflater
         LayoutInflater inflater = getActivity().getLayoutInflater();
 
-        builder.setView(inflater.inflate(R.layout.songplayer_frag_dialog, null));
+        builder.setView(inflater.inflate(R.layout.fragment_song_player, null));
 
-                return builder.create();
+        return builder.create();
     }
                         
 
@@ -121,15 +153,21 @@ public class SongPlayerCtrlDialog extends DialogFragment {
         }
     }
 
-    public static SongPlayerCtrlDialog newInstance() {
-        SongPlayerCtrlDialog f = new SongPlayerCtrlDialog();
+    public static PlayerFragDialog newInstance(AppCompatActivity context) {
+
+
+        PlayerFragDialog f = new PlayerFragDialog();
+        Bundle extras = context.getIntent().getExtras();
+
+        f.setArguments(extras);
+
         return f;
     }
 
 
 
     public interface onControlMediaPlayer {
-        void passMediaPlayer();
+        void  passMediaPlayer(AppCompatActivity activity, MediaPlayer mp, int index);
     }
 
 }

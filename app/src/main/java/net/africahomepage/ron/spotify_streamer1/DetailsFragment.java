@@ -30,48 +30,54 @@ import retrofit.RetrofitError;
 public class DetailsFragment extends Fragment {
 
     ArrayList<TrackObject> mTracksData = new ArrayList<>();
-    String mSpotifyId = null;
-    DetailsAdapter adapter = null;
-    Bundle extras = null;
+    ArtistObject mArtist = null;
+    DetailsAdapter mAdapter = null;
+
     private static final int PROGRESS = 0x1;
-
     private ProgressBar mProgress;
-    private int mProgressStatus = 0;
-
     static final String TRACK_DATA = "trackData";
-    String mArtistName = null;
-
-
+    static final String ARTIST_DATA = "artistData";
     private final String LOG_TAG = DetailsFragment.class.getSimpleName();
 
-    public DetailsFragment() {
-    }
+    public static DetailsFragment newInstance(ArtistObject artist) {
+        DetailsFragment d = new DetailsFragment();
+        Bundle args = new Bundle();
+        args.putParcelable("artist", artist);
 
+        d.setArguments(args);
+
+        return d;
+
+    }
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
         //there is no saved state or there is no track data or there is no artist name
         if (savedInstanceState == null || !savedInstanceState.containsKey(TRACK_DATA) ||
-                !savedInstanceState.containsKey("ARTIST_NAME")) {
+                !savedInstanceState.containsKey(ARTIST_DATA)) {
             mTracksData = new ArrayList<>();
+
         } else {
-            mTracksData = savedInstanceState.getParcelableArrayList("ArtistDAta");
-            mArtistName = savedInstanceState.get("ARTIST_NAME").toString();
+            mTracksData = savedInstanceState.getParcelableArrayList(TRACK_DATA);
+            mArtist = savedInstanceState.getParcelable(ARTIST_DATA);
         }
-        extras = getActivity().getIntent().getExtras();
+        Bundle extras = getActivity().getIntent().getExtras();
         // Set title
         if (extras != null) {
-            mSpotifyId = extras.getString(Intent.EXTRA_TEXT);
+            mArtist = extras.getParcelable(ARTIST_DATA);
 
             if (extras.containsKey("Artist")) {
-                mArtistName = extras.get("Artist").toString();
-                if (mArtistName != null) {
-                    getActivity().setTitle("Top 10 Tracks \n " + mArtistName);
+                mArtist = extras.getParcelable(ARTIST_DATA);
+                if (mArtist != null) {
+                    getActivity().setTitle("Top 10 Tracks \n " + mArtist.mName);
                 }
             }  else {
                 getActivity().setTitle("Search for artist");
             }
 
+        } else{
+            extras = getArguments();
+            mArtist = extras.getParcelable("artist");
         }
         super.onCreate(savedInstanceState);
     }
@@ -80,9 +86,8 @@ public class DetailsFragment extends Fragment {
     public void onSaveInstanceState(Bundle outState) {
         //save mTracksData list
         outState.putParcelableArrayList(TRACK_DATA, mTracksData);
-        if (mArtistName != null) {
-            outState.putCharSequence("ARTIST_NAME", new StringBuilder(mArtistName));
-        }
+        outState.putParcelable(ARTIST_DATA, mArtist);
+
         super.onSaveInstanceState(outState);
     }
 
@@ -95,17 +100,15 @@ public class DetailsFragment extends Fragment {
         RecyclerView recyclerView = (RecyclerView) rootView.findViewById(R.id.details_recycler_view);
         recyclerView.setLayoutManager(new LinearLayoutManager(getActivity()));
 
-        adapter = new DetailsAdapter(mArtistName, mTracksData);
-        recyclerView.setAdapter(adapter);
+        mAdapter = new DetailsAdapter(mArtist.mName, mTracksData);
+        recyclerView.setAdapter(mAdapter);
 
         /*
         Check if there is a list of tracks and if this fragment is opened by "two-pane" tablet view.
         If fragment is a part of "two-pane" activity return View without trying to fetch data
          */
-        if (mTracksData.isEmpty() && mSpotifyId != null) {
+        if (mTracksData.isEmpty()) {
             startFetchTrackTASk();
-        } else {
-            return rootView;
         }
 
         return rootView;
@@ -123,7 +126,7 @@ public class DetailsFragment extends Fragment {
         @Override
         protected void onPreExecute() {
             mProgress.setVisibility(ProgressBar.VISIBLE);
-            mProgress.setProgress(mProgressStatus);
+            //mProgress.setProgress(mProgressStatus);
             mProgress.setIndeterminate(true);
             super.onPreExecute();
         }
@@ -138,7 +141,7 @@ public class DetailsFragment extends Fragment {
             Tracks topTracksData = null;
 
             try {
-                topTracksData = spotify.getArtistTopTrack(mSpotifyId, query);
+                topTracksData = spotify.getArtistTopTrack(mArtist.mSpotifyId, query);
             } catch (RetrofitError error) {
                 Log.e(LOG_TAG, error.getMessage());
                 Toast.makeText(getActivity(), "API error. Could not complete request", Toast.LENGTH_SHORT).show();
@@ -176,14 +179,14 @@ public class DetailsFragment extends Fragment {
             if (mTracksData.isEmpty()) {
                 Toast.makeText(getActivity(), "There are no top tracks for the artist selected", Toast.LENGTH_SHORT).show();
             }
-            adapter.notifyDataSetChanged();
+            mAdapter.notifyDataSetChanged();
         }
     }
 
     public void update(ArtistObject artist) {
-        mSpotifyId = artist.mSpotifyId;
+        mArtist = artist;
         startFetchTrackTASk();
-        adapter.notifyDataSetChanged();
+        mAdapter.notifyDataSetChanged();
     }
 
 }

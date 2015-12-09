@@ -2,6 +2,10 @@ package net.africahomepage.ron.spotify_streamer1;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +13,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.amazonaws.auth.policy.Resource;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -58,12 +63,32 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.TrackVie
             @Override
             public void onClick(View v) {
 
-                Context context = v.getContext();
-                Intent intent = new Intent(context, SongPlayerActivity.class);
-                intent.putParcelableArrayListExtra("net.africahomepage.ron.Tracks", mDataSet);
-                intent.putExtra("net.africahomepage.ron.index", position);
-                intent.putExtra("net.africahomepage.ron.artist", mArtist);
-                context.startActivity(intent);
+               View details = v.getRootView().findViewById(R.id.details);
+                boolean dualPane = details != null && details.getVisibility() == View.VISIBLE;
+
+                if(!dualPane) {
+                    Context context = v.getContext();
+                    Intent intent = new Intent(context, PlayerActivity.class);
+                    intent.putParcelableArrayListExtra("net.africahomepage.ron.Tracks", mDataSet);
+                    intent.putExtra("net.africahomepage.ron.index", position);
+                    intent.putExtra("net.africahomepage.ron.artist", mArtist);
+                    context.startActivity(intent);
+                } else {
+                    FragmentManager manager = ((AppCompatActivity) v.getContext()).getSupportFragmentManager();
+                    FragmentTransaction ft = manager.beginTransaction();
+                    PlayerFragDialog playerFrag =  PlayerFragDialog
+                            .newInstance((AppCompatActivity)v.getContext());
+                    Bundle args = new Bundle();
+                    args.putString("net.africahomepage.ron.artist", mArtist);
+                    args.putInt("net.africahomepage.ron.index", position);
+
+                    playerFrag.setArguments(args);
+
+                    playerFrag.show(manager, "dialog");
+                    ft.commit();
+
+
+                }
 
             }
         });

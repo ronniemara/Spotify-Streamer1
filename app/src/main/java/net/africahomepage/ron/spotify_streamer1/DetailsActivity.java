@@ -1,17 +1,27 @@
 package net.africahomepage.ron.spotify_streamer1;
 
+import android.media.MediaPlayer;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 
-public class DetailsActivity extends AppCompatActivity {
+public class DetailsActivity extends AppCompatActivity
+        implements PlayerFragDialog.onControlMediaPlayer {
+
+    DetailsFragment mDetailsFragement;
+    PlayerFragDialog mPlayerFragDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_details);
+
+        mDetailsFragement = (DetailsFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_details);
+
+
     }
 
 
@@ -36,5 +46,10 @@ public class DetailsActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    @Override
+    public void passMediaPlayer(AppCompatActivity activity, MediaPlayer mp, int index) {
+        new Util().passMediaPlayer(activity,mp,index);
     }
 }

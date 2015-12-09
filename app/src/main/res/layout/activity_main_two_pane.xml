@@ -1,21 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="horizontal" android:layout_width="match_parent"
+    android:orientation="horizontal"
+    android:layout_width="match_parent"
     android:layout_height="match_parent">
     <fragment
         android:layout_width="400dp"
         android:layout_marginRight="20dp"
         android:layout_height="match_parent"
-        android:id="@+id/artists_views"
+        android:id="@+id/fragment_main"
         android:name="net.africahomepage.ron.spotify_streamer1.MainFragment"
         tools:layout="@layout/fragment_main" />
 
-    <fragment
-        android:layout_width="match_parent"
+    <FrameLayout
+        android:layout_width="0px"
         android:layout_height="match_parent"
-        android:id="@+id/tracks_views"
-        android:layout_marginTop="35dp"
-        android:name="net.africahomepage.ron.spotify_streamer1.DetailsFragment"
-        tools:layout="@layout/fragment_main" />
+        android:layout_weight="1"
+        android:background="?android:attr/detailsElementBackground"
+        android:id="@+id/details"
+        ></FrameLayout>
+
 </LinearLayout>
