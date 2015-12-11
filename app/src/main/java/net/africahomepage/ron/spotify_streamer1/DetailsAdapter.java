@@ -63,8 +63,7 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.TrackVie
             @Override
             public void onClick(View v) {
 
-               View details = v.getRootView().findViewById(R.id.details);
-                boolean dualPane = details != null && details.getVisibility() == View.VISIBLE;
+                boolean dualPane = v.getContext().getResources().getBoolean(R.bool.large_layout);
 
                 if(!dualPane) {
                     Context context = v.getContext();
@@ -76,9 +75,19 @@ public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.TrackVie
                 } else {
                     FragmentManager manager = ((AppCompatActivity) v.getContext()).getSupportFragmentManager();
                     FragmentTransaction ft = manager.beginTransaction();
+
+
+                    //check if fragment already exists
+                    PlayerFragDialog prev = (PlayerFragDialog) manager.findFragmentByTag("dialog");
+                    if(prev != null) {
+                        ft.remove(prev);
+                    }
+                    ft.addToBackStack(null);
+
                     PlayerFragDialog playerFrag =  PlayerFragDialog
                             .newInstance((AppCompatActivity)v.getContext());
                     Bundle args = new Bundle();
+                    args.putParcelableArrayList("net.africahomepage.ron.Tracks", mDataSet);
                     args.putString("net.africahomepage.ron.artist", mArtist);
                     args.putInt("net.africahomepage.ron.index", position);
 

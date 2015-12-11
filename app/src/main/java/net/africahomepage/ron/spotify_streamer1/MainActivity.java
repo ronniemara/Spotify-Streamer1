@@ -13,13 +13,11 @@ import android.view.MenuItem;
 import android.view.View;
 
 public class MainActivity extends AppCompatActivity
-        implements MainFragment.OnArtistClickListener,
-PlayerFragDialog.onControlMediaPlayer{
+        implements MainFragment.OnArtistClickListener
+{
 
-    @Override
-    public void passMediaPlayer(AppCompatActivity activity, MediaPlayer mp, int index) {
+    static final String ARTIST_DATA = "artistData";
 
-    }
 
     boolean mDualPane =false;
     ArtistObject mArtistObject = null;
@@ -31,9 +29,7 @@ PlayerFragDialog.onControlMediaPlayer{
 
         setContentView(R.layout.activity_main);
 
-        //check to see if dual pane mode
-        View details = findViewById(R.id.details);
-        mDualPane = details != null && details.getVisibility() == View.VISIBLE;
+        mDualPane = getResources().getBoolean(R.bool.large_layout);
 
         mMainFragment = (MainFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_main);
         mMainFragment.setOnArtistClickListener(this);
@@ -84,7 +80,7 @@ PlayerFragDialog.onControlMediaPlayer{
             ft.commit();
         } else {
             Intent intent = new Intent(this, DetailsActivity.class);
-            intent.putExtra("artist", artist);
+            intent.putExtra(ARTIST_DATA, artist);
             startActivity(intent);
         }
     }

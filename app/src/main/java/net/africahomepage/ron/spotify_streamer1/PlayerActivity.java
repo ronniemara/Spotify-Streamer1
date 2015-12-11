@@ -17,8 +17,7 @@ import java.util.ArrayList;
  * Created by ron on 08/11/15.
  */
 public class PlayerActivity extends AppCompatActivity
-        implements PlayerFragDialog.onControlMediaPlayer
- {
+        {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -29,8 +28,4 @@ public class PlayerActivity extends AppCompatActivity
         Util.showFragment(this);
     }
 
-     @Override
-     public void passMediaPlayer(AppCompatActivity activity, MediaPlayer mp, int index) {
-         new Util().passMediaPlayer(activity,mp,index);
-     }
- }
+}

@@ -13,10 +13,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/song_album_text_view"/>
-    <SeekBar 
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:id="@+id/song_seek_bar"/>
 
     <ImageView
         android:layout_width="match_parent"
@@ -28,31 +24,4 @@
         android:layout_height="wrap_content"
         android:id="@+id/song_title_text_view"/>
 
-    <LinearLayout 
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center">
-            <ImageButton
-                android:layout_width="50dip"
-                android:layout_height="50dip"
-                android:src="@android:drawable/ic_media_previous"
-                android:id="@+id/previous_button"
-                android:color="#000"
-                android:contentDescription="@string/play_button"
-                />
-            <ToggleButton
-                android:layout_width="50dip"
-                android:layout_height="50dip"
-                android:button="@android:drawable/ic_media_pause"
-                android:id="@+id/play_button"
-                android:color="#000"
-                />
-            <ImageButton
-                android:layout_width="50dip"
-                android:layout_height="50dip"
-                android:src="@android:drawable/ic_media_next"
-                android:id="@+id/next_button"
-                android:color="#000"
-                android:contentDescription="next button" />
-    </LinearLayout>
 </LinearLayout>

@@ -7,10 +7,9 @@ import android.view.Menu;
 import android.view.MenuItem;
 
 public class DetailsActivity extends AppCompatActivity
-        implements PlayerFragDialog.onControlMediaPlayer {
+        {
 
     DetailsFragment mDetailsFragement;
-    PlayerFragDialog mPlayerFragDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,8 +47,4 @@ public class DetailsActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void passMediaPlayer(AppCompatActivity activity, MediaPlayer mp, int index) {
-        new Util().passMediaPlayer(activity,mp,index);
-    }
 }

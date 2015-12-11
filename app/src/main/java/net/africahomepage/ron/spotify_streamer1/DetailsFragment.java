@@ -64,9 +64,7 @@ public class DetailsFragment extends Fragment {
         Bundle extras = getActivity().getIntent().getExtras();
         // Set title
         if (extras != null) {
-            mArtist = extras.getParcelable(ARTIST_DATA);
-
-            if (extras.containsKey("Artist")) {
+            if (extras.containsKey(ARTIST_DATA)) {
                 mArtist = extras.getParcelable(ARTIST_DATA);
                 if (mArtist != null) {
                     getActivity().setTitle("Top 10 Tracks \n " + mArtist.mName);

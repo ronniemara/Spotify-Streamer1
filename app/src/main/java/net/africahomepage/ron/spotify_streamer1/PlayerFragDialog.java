@@ -3,6 +3,7 @@ package net.africahomepage.ron.spotify_streamer1;
 import android.app.Activity;
 import android.app.Dialog;
 import android.media.AudioManager;
+import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
 import android.media.MediaPlayer;
@@ -13,17 +14,24 @@ import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.MediaController;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import com.squareup.picasso.Picasso;
+
 import java.io.IOException;
 import java.util.ArrayList;
 
 import butterknife.Bind;
+import butterknife.ButterKnife;
 
 /**
  * Created by ron on 01/12/15.
@@ -32,26 +40,24 @@ public class PlayerFragDialog extends DialogFragment {
 
     private static int mIndex;
     private static MediaPlayer mMediaPlayer;
+    public MediaController mMediaController;
     ArrayList<TrackObject> mTracks;
     TrackObject mTrack;
-    private onControlMediaPlayer dialogListener;
     String mArtist;
-    private int mProgress;
     PlayerOnErrorListener errorListener = null;
     String LOG_TAG = PlayerFragDialog.class.getSimpleName();
+    boolean mIsLargeLayout;
 
-    @Bind(R.id.previous_button)        ImageButton prev;
-    @Bind(R.id.play_button)            ToggleButton play;
-    @Bind(R.id.next_button)            ImageButton next;
     @Bind(R.id.song_player_image_view) ImageView imageView;
     @Bind(R.id.song_artist_text_view)  TextView artistName;
     @Bind(R.id.song_album_text_view)   TextView albumName;
-    @Bind(R.id.song_seek_bar)           SeekBar seekBar;
+
     @Bind(R.id.song_title_text_view)    TextView songTitle;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        mIsLargeLayout = getActivity().getResources().getBoolean(R.bool.large_layout);
 
         Bundle extras = getActivity().getIntent().getExtras();
 
@@ -76,40 +82,69 @@ public class PlayerFragDialog extends DialogFragment {
 
             mArtist = getArguments().getString("net.africahomepage.ron.artist");
         }
+//        Log.i(LOG_TAG, "In onCreateDialog");
+//
+//        mMediaController = new MediaController(getActivity());
+//
+//
+//
+//
+//        //mMediaController.setAnchorView(rootView);
+//        mMediaController.setMediaPlayer(MyMediaPlayer.newInstance(mMediaPlayer));
+//
+//        //set up MediaPlayer
+//        errorListener = new PlayerOnErrorListener();
+//        mMediaPlayer = new MediaPlayer();
+//        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+//        mMediaPlayer.setOnErrorListener(errorListener);
+//        mMediaPlayer.setOnPreparedListener(new PlayerOnPreparedListener());
+//
+//        try{
+//            mMediaPlayer.setDataSource(mTrack.mPreviewUrl);
+//            mMediaPlayer.prepareAsync();
+//        } catch (IllegalArgumentException e) {
+//            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+//            Log.e(LOG_TAG, e.getMessage());
+//        } catch(IOException e) {
+//            Log.e(LOG_TAG,e.getMessage());
+//            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+//        } catch(IllegalStateException e) {
+//            Log.e(LOG_TAG,e.getMessage());
+//            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT);
+//        }
 
-        mProgress = 0;
 
-        //set up MediaPlayer
-        errorListener = new PlayerOnErrorListener();
-        mMediaPlayer = new MediaPlayer();
-        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-        mMediaPlayer.setOnErrorListener(errorListener);
-        mMediaPlayer.setOnPreparedListener(new PlayerOnPreparedListener());
+//        mMediaController.show();
 
-        try{
-            mMediaPlayer.setDataSource(mTrack.mPreviewUrl);
-            mMediaPlayer.prepareAsync();
-        } catch (IllegalArgumentException e) {
-            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
-            Log.e(LOG_TAG, e.getMessage());
-        } catch(IOException e) {
-            Log.e(LOG_TAG,e.getMessage());
-            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
-        } catch(IllegalStateException e) {
-            Log.e(LOG_TAG,e.getMessage());
-            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT);
-        }
+    }
+
+    @Nullable
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        View rootView = inflater.inflate(R.layout.fragment_song_player, container, false);
+        ButterKnife.bind(this, rootView);
+
+        Picasso.with(getActivity())
+
+                .load(mTrack.mTrackLargeImageUrl)
+                .placeholder(R.drawable.placeholder)
+                .centerCrop()
+                .fit()
+                .into(imageView);
+
+        artistName.setText(mArtist.toString());
+        albumName.setText(mTrack.mTrackAlbum);
+        songTitle.setText(mTrack.mTrackTitle);
+
+        return rootView;
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceStance) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        // Get the layout inflater
-        LayoutInflater inflater = getActivity().getLayoutInflater();
+        Dialog dialog = super.onCreateDialog(savedInstanceStance);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        return dialog;
 
-        builder.setView(inflater.inflate(R.layout.fragment_song_player, null));
-
-        return builder.create();
     }
                         
 
@@ -141,17 +176,6 @@ public class PlayerFragDialog extends DialogFragment {
         mIndex = index;
     }
 
-    @Override
-    public void onAttach(Activity activity) {
-        super.onAttach(activity);
-
-        try {
-            dialogListener = (onControlMediaPlayer) activity;
-        } catch (ClassCastException e) {
-            throw new ClassCastException(e.toString()
-                    + "needs to implement onControlMediaPlayer");
-        }
-    }
 
     public static PlayerFragDialog newInstance(AppCompatActivity context) {
 
@@ -163,12 +187,5 @@ public class PlayerFragDialog extends DialogFragment {
 
         return f;
     }
-
-
-
-    public interface onControlMediaPlayer {
-        void  passMediaPlayer(AppCompatActivity activity, MediaPlayer mp, int index);
-    }
-
 }
 
