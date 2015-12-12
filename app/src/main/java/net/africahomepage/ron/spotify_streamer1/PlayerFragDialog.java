@@ -3,6 +3,7 @@ package net.africahomepage.ron.spotify_streamer1;
 import android.app.Activity;
 import android.app.Dialog;
 import android.media.AudioManager;
+import android.os.Handler;
 import android.support.annotation.Nullable;
 import android.support.v4.app.DialogFragment;
 import android.content.DialogInterface;
@@ -36,8 +37,12 @@ import butterknife.ButterKnife;
 /**
  * Created by ron on 01/12/15.
  */
-public class PlayerFragDialog extends DialogFragment {
-
+public class PlayerFragDialog extends DialogFragment
+        implements MediaPlayer.OnPreparedListener,
+        MediaPlayer.OnErrorListener,
+        MediaController.MediaPlayerControl
+        {
+    private Handler mHandler = new Handler();
     private static int mIndex;
     private static MediaPlayer mMediaPlayer;
     public MediaController mMediaController;
@@ -47,6 +52,7 @@ public class PlayerFragDialog extends DialogFragment {
     PlayerOnErrorListener errorListener = null;
     String LOG_TAG = PlayerFragDialog.class.getSimpleName();
     boolean mIsLargeLayout;
+            private View rootView;
 
     @Bind(R.id.song_player_image_view) ImageView imageView;
     @Bind(R.id.song_artist_text_view)  TextView artistName;
@@ -84,34 +90,14 @@ public class PlayerFragDialog extends DialogFragment {
         }
 //        Log.i(LOG_TAG, "In onCreateDialog");
 //
-//        mMediaController = new MediaController(getActivity());
 //
 //
 //
 //
-//        //mMediaController.setAnchorView(rootView);
+//
+//        mMediaController.setAnchorView(rootView);
 //        mMediaController.setMediaPlayer(MyMediaPlayer.newInstance(mMediaPlayer));
 //
-//        //set up MediaPlayer
-//        errorListener = new PlayerOnErrorListener();
-//        mMediaPlayer = new MediaPlayer();
-//        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-//        mMediaPlayer.setOnErrorListener(errorListener);
-//        mMediaPlayer.setOnPreparedListener(new PlayerOnPreparedListener());
-//
-//        try{
-//            mMediaPlayer.setDataSource(mTrack.mPreviewUrl);
-//            mMediaPlayer.prepareAsync();
-//        } catch (IllegalArgumentException e) {
-//            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
-//            Log.e(LOG_TAG, e.getMessage());
-//        } catch(IOException e) {
-//            Log.e(LOG_TAG,e.getMessage());
-//            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
-//        } catch(IllegalStateException e) {
-//            Log.e(LOG_TAG,e.getMessage());
-//            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT);
-//        }
 
 
 //        mMediaController.show();
@@ -121,9 +107,8 @@ public class PlayerFragDialog extends DialogFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_song_player, container, false);
+        rootView = inflater.inflate(R.layout.fragment_song_player, container, false);
         ButterKnife.bind(this, rootView);
-
         Picasso.with(getActivity())
 
                 .load(mTrack.mTrackLargeImageUrl)
@@ -135,8 +120,32 @@ public class PlayerFragDialog extends DialogFragment {
         artistName.setText(mArtist.toString());
         albumName.setText(mTrack.mTrackAlbum);
         songTitle.setText(mTrack.mTrackTitle);
-
+        initializeMediaPlayer();
         return rootView;
+    }
+
+    public  void initializeMediaPlayer() {
+        //set up MediaPlayer
+        errorListener = new PlayerOnErrorListener();
+        mMediaPlayer = new MediaPlayer();
+        mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
+        mMediaPlayer.setOnErrorListener(errorListener);
+        mMediaPlayer.setOnPreparedListener(this);
+
+        try{
+            mMediaPlayer.setDataSource(mTrack.mPreviewUrl);
+            mMediaPlayer.prepareAsync();
+        } catch (IllegalArgumentException e) {
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+            Log.e(LOG_TAG, e.getMessage());
+        } catch(IOException e) {
+            Log.e(LOG_TAG,e.getMessage());
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT).show();
+        } catch(IllegalStateException e) {
+            Log.e(LOG_TAG,e.getMessage());
+            Toast.makeText(getActivity(), e.getMessage(), Toast.LENGTH_SHORT);
+        }
+
     }
 
     @Override
@@ -144,9 +153,9 @@ public class PlayerFragDialog extends DialogFragment {
         Dialog dialog = super.onCreateDialog(savedInstanceStance);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         return dialog;
-
     }
-                        
+
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
@@ -161,31 +170,86 @@ public class PlayerFragDialog extends DialogFragment {
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onDismiss(DialogInterface dialog) {
-        dialog.dismiss();
-    }
-
-    @Override
-    public void onCancel(DialogInterface dialog) {
-        dialog.cancel();
-    }
-
-    public static void setUp(MediaPlayer mediaPlayer, int index) {
-        mMediaPlayer = mediaPlayer;
-        mIndex = index;
-    }
-
-
     public static PlayerFragDialog newInstance(AppCompatActivity context) {
-
-
         PlayerFragDialog f = new PlayerFragDialog();
         Bundle extras = context.getIntent().getExtras();
-
         f.setArguments(extras);
-
         return f;
+    }
+
+    @Override
+    public void onPrepared(MediaPlayer mp) {
+        mMediaController = new MediaController(getActivity());
+        mMediaController.setMediaPlayer(this);
+        mMediaController.setAnchorView(rootView);
+
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                mMediaController.setEnabled(true);
+                mMediaController.show();
+            }
+        });
+    }
+
+    @Override
+    public boolean onError(MediaPlayer mp, int what, int extra) {
+        return false;
+    }
+
+    @Override
+    public void start() {
+        mMediaPlayer.start();
+    }
+
+    @Override
+    public void pause() {
+        mMediaPlayer.pause();
+    }
+
+    @Override
+    public int getDuration() {
+        return mMediaPlayer.getDuration();
+    }
+
+    @Override
+    public int getCurrentPosition() {
+        return mMediaPlayer.getCurrentPosition();
+    }
+
+    @Override
+    public void seekTo(int pos) {
+        mMediaPlayer.seekTo(pos);
+    }
+
+    @Override
+    public boolean isPlaying() {
+        return mMediaPlayer.isPlaying();
+    }
+
+    @Override
+    public int getBufferPercentage() {
+        return 0;
+    }
+
+    @Override
+    public boolean canPause() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekBackward() {
+        return true;
+    }
+
+    @Override
+    public boolean canSeekForward() {
+        return true;
+    }
+
+    @Override
+    public int getAudioSessionId() {
+        return mMediaPlayer.getAudioSessionId();
     }
 }
 
