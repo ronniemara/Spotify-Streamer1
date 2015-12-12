@@ -88,19 +88,6 @@ public class PlayerFragDialog extends DialogFragment
 
             mArtist = getArguments().getString("net.africahomepage.ron.artist");
         }
-//        Log.i(LOG_TAG, "In onCreateDialog");
-//
-//
-//
-//
-//
-//
-//        mMediaController.setAnchorView(rootView);
-//        mMediaController.setMediaPlayer(MyMediaPlayer.newInstance(mMediaPlayer));
-//
-
-
-//        mMediaController.show();
 
     }
 
@@ -121,6 +108,13 @@ public class PlayerFragDialog extends DialogFragment
         albumName.setText(mTrack.mTrackAlbum);
         songTitle.setText(mTrack.mTrackTitle);
         initializeMediaPlayer();
+        rootView.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mMediaController.show();
+            }
+        });
+
         return rootView;
     }
 
@@ -154,6 +148,8 @@ public class PlayerFragDialog extends DialogFragment
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         return dialog;
     }
+
+
 
 
 
