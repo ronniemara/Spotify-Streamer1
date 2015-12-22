@@ -1,17 +1,23 @@
 package net.africahomepage.ron.spotify_streamer1;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
+import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
+
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -20,6 +26,7 @@ import java.util.Map;
 
 import kaaes.spotify.webapi.android.SpotifyApi;
 import kaaes.spotify.webapi.android.SpotifyService;
+import kaaes.spotify.webapi.android.models.Image;
 import kaaes.spotify.webapi.android.models.Track;
 import kaaes.spotify.webapi.android.models.Tracks;
 import retrofit.RetrofitError;
@@ -32,12 +39,14 @@ public class DetailsFragment extends Fragment {
     ArrayList<TrackObject> mTracksData = new ArrayList<>();
     ArtistObject mArtist = null;
     DetailsAdapter mAdapter = null;
+    onTrackClickListener mOnTrackClickListener =  null;
 
     private static final int PROGRESS = 0x1;
     private ProgressBar mProgress;
     static final String TRACK_DATA = "trackData";
     static final String ARTIST_DATA = "artistData";
     private final String LOG_TAG = DetailsFragment.class.getSimpleName();
+    private DetailsFragment.onTrackClickListener onTrackClickListener;
 
     public static DetailsFragment newInstance(ArtistObject artist) {
         DetailsFragment d = new DetailsFragment();
@@ -117,6 +126,10 @@ public class DetailsFragment extends Fragment {
         fetchTrackTAsk.execute();
     }
 
+    public void setOnTrackClickListener(AppCompatActivity activity) {
+        onTrackClickListener = (onTrackClickListener)activity;
+    }
+
     public class FetchTrackTAsk extends AsyncTask<Void, Void, Void> {
 
         private final String LOG_TAG = FetchTrackTAsk.class.getSimpleName();
@@ -157,13 +170,25 @@ public class DetailsFragment extends Fragment {
 
             for (int i = 0; i < tracksList.size(); i++) {
                 Track track = tracksList.get(i);
-                String albumSmallImage = track.album.images.get(1).url;
-                String albumLargeImage = track.album.images.get(0).url;
 
-                mTracksData.add(new TrackObject(track.album.name, track.name, albumSmallImage, albumLargeImage, track.preview_url));
+                Map<String, String> images = new HashMap<>();
+
+                for (int j = 0; j < track.album.images.size(); j++) {
+                    String imageKey = "albumImage" + j;
+                    images.put(imageKey, track.album.images.get(j).url);
+                }
+
+                if (images.size() >= 2) {
+                    mTracksData.add(new TrackObject(track.album.name, track.name,
+                            images.get("albumImage0"), images.get("albumImage1"), track.preview_url));
+                }
+                else {
+                    mTracksData.add(new TrackObject(track.album.name, track.name,
+                            images.get("albumImage0"), null, track.preview_url));
+                }
+
             }
             return null;
-
         }
 
         @Override
@@ -185,6 +210,90 @@ public class DetailsFragment extends Fragment {
         mArtist = artist;
         startFetchTrackTASk();
         mAdapter.notifyDataSetChanged();
+    }
+
+
+    @Override
+    public void onAttach(Activity activity) {
+        setOnTrackClickListener((AppCompatActivity)activity);
+        super.onAttach(activity);
+
+        try {
+            onTrackClickListener = (onTrackClickListener) activity;
+        } catch (ClassCastException e) {
+            throw new ClassCastException(e.toString()
+                    + "must implement ");
+        }
+    }
+
+    public interface  onTrackClickListener {
+      void launchDialog(int pos, ArrayList<TrackObject> mArtistData, String ARTIST_DATA);
+    }
+
+
+    public class DetailsAdapter extends RecyclerView.Adapter<DetailsAdapter.TrackViewHolder>{
+
+        ArrayList<TrackObject> mDataSet;
+        String mArtist;
+
+        public DetailsAdapter(String artist, ArrayList<TrackObject> item) {
+            mArtist = artist;
+            mDataSet = item;
+            mOnTrackClickListener = (onTrackClickListener) getActivity();
+        }
+
+        @Override
+        public TrackViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View rootView = LayoutInflater.from(parent.getContext()).inflate(R.layout.details_recycler_view_layout, parent, false);
+            TrackViewHolder viewHolder = new TrackViewHolder(rootView);
+            return  viewHolder;
+        }
+
+        @Override
+        public int getItemCount() {
+            return mDataSet.size();
+        }
+
+        @Override
+        public void onBindViewHolder(TrackViewHolder holder, final int position) {
+
+            final TrackObject item = mDataSet.get(position);
+
+            Picasso.with(holder.container.getContext())
+                    .load(item.mTrackSmallImageUrl)
+                    .fit()
+                    .centerCrop()
+                    .into(holder.imageView);
+
+            holder.trackTitle.setText(item.mTrackTitle);
+
+            holder.trackAlbum.setText(item.mTrackAlbum);
+
+            holder.container.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                   mOnTrackClickListener.launchDialog(position, mTracksData, ARTIST_DATA);
+                }
+            });
+        }
+
+        public class TrackViewHolder extends RecyclerView.ViewHolder {
+
+            protected View container;
+            protected ImageView imageView;
+            protected TextView trackTitle;
+            protected TextView trackAlbum;
+
+            public TrackViewHolder(View itemView) {
+                super(itemView);
+
+                container = itemView;
+                imageView = (ImageView) itemView.findViewById(R.id.details_listview_layout_imageview);
+                trackTitle = (TextView) itemView.findViewById(R.id.details_listview_layout_song);
+                trackAlbum = (TextView) itemView.findViewById(R.id.details_listview_layout_album);
+            }
+        }
+
     }
 
 }

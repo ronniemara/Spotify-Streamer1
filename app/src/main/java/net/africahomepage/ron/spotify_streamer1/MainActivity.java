@@ -12,8 +12,11 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
+import java.util.ArrayList;
+
 public class MainActivity extends AppCompatActivity
-        implements MainFragment.OnArtistClickListener
+        implements MainFragment.OnArtistClickListener,
+        DetailsFragment.onTrackClickListener
 {
 
     static final String ARTIST_DATA = "artistData";
@@ -22,6 +25,9 @@ public class MainActivity extends AppCompatActivity
     boolean mDualPane =false;
     ArtistObject mArtistObject = null;
     MainFragment mMainFragment = null;
+
+    DetailsFragment mDetailsFragment =  null;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +40,11 @@ public class MainActivity extends AppCompatActivity
         mMainFragment = (MainFragment) getSupportFragmentManager().findFragmentById(R.id.fragment_main);
         mMainFragment.setOnArtistClickListener(this);
 
+        mDetailsFragment = (DetailsFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.fragment_details);
+    if(mDetailsFragment !=null) {
+        mDetailsFragment.setOnTrackClickListener(this);
+    }
 
     }
 
@@ -70,18 +81,56 @@ public class MainActivity extends AppCompatActivity
             DetailsFragment detailsFragment = DetailsFragment.newInstance(artist);
 
             if(detailsFragment !=null) {
-
+                detailsFragment.setOnTrackClickListener(this);
                 ft.replace(R.id.details, detailsFragment, "details");
             } else {
                 detailsFragment = new DetailsFragment();
                 ft.replace(R.id.details, detailsFragment, "details");
             }
-
             ft.commit();
         } else {
             Intent intent = new Intent(this, DetailsActivity.class);
             intent.putExtra(ARTIST_DATA, artist);
             startActivity(intent);
         }
+    }
+
+
+    public void launchDialog(int position, ArrayList<TrackObject> mDataSet, String mArtist) {
+
+        boolean dualPane = this.getResources().getBoolean(R.bool.large_layout);
+
+        if(!dualPane) {
+            Intent intent = new Intent(this, PlayerActivity.class);
+            intent.putParcelableArrayListExtra("net.africahomepage.ron.Tracks", mDataSet);
+            intent.putExtra("net.africahomepage.ron.index", position);
+            intent.putExtra("net.africahomepage.ron.artist", mArtist);
+            startActivity(intent);
+        } else {
+android.support.v4.app.FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+
+
+            //check if fragment already exists
+            PlayerFragDialog prev = (PlayerFragDialog) getSupportFragmentManager().findFragmentByTag("dialog");
+            if(prev != null) {
+                ft.remove(prev);
+            }
+            ft.addToBackStack(null);
+
+            PlayerFragDialog playerFrag =  PlayerFragDialog
+                    .newInstance(this);
+            Bundle args = new Bundle();
+            args.putParcelableArrayList("net.africahomepage.ron.Tracks", mDataSet);
+            args.putString("net.africahomepage.ron.artist", mArtist);
+            args.putInt("net.africahomepage.ron.index", position);
+
+            playerFrag.setArguments(args);
+
+            playerFrag.show(getSupportFragmentManager(), "dialog");
+            ft.commit();
+
+
+        }
+
     }
 }

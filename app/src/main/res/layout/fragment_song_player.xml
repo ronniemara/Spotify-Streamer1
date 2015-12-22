@@ -1,4 +1,4 @@
-<LinearLayout
+<RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:id="@+id/song_player_dialog_fragment"
@@ -19,9 +19,19 @@
         android:layout_height="wrap_content"
         android:id="@+id/song_player_image_view"
         android:contentDescription="@string/ArtistImage" />
-    <TextView 
+
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/song_title_text_view"/>
+        android:id="@+id/controles">
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/song_title_text_view"/>
 
-</LinearLayout>
+
+    </FrameLayout>
+
+
+
+</RelativeLayout>
